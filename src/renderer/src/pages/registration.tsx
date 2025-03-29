@@ -47,6 +47,18 @@ const Registration = () => {
     gknb: ["9-отдел", "АТЦ", "КЦКБ"]
   };
 
+  const registrationTypes = {
+    primary: "Первичная",
+    replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
+    replacement_number_only: "Замена гос номера без замены техпаспорта",
+    replacement_tech_passport_only: "Замена тех паспорта без замены гос номера"
+  };
+
+  const organizationNames = {
+    mvd: "МВД",
+    gknb: "ГКНБ"
+  };
+
   const handleChange = (field: keyof RegistrationFormData, value: any) => {
     setFormData({
       ...formData,
@@ -89,6 +101,8 @@ const Registration = () => {
 
       const dataToSend = {
         ...formData,
+        registrationType: registrationTypes[formData.registrationType as keyof typeof registrationTypes],
+        organizationName: organizationNames[formData.organizationName as keyof typeof organizationNames],
         registrationDate: formData.registrationDate?.toISOString().split('T')[0] || null,
         receiveDate: formData.receiveDate?.toISOString().split('T')[0] || null,
         expirationDate: formData.expirationDate?.toISOString().split('T')[0] || null,
