@@ -176,50 +176,89 @@ const Search = () => {
   };
 
   return (
-    <Box sx={{ padding: "20px" }}>
-      <Typography variant="h4" gutterBottom>
-        Поиск
-      </Typography>
-      
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-        <Button variant="contained" component={Link} to="/" sx={{ mb: 2 }}>Назад</Button>
-      </Box>
-
-      <Tabs 
-        value={searchType} 
-        onChange={(_, newValue) => setSearchType(newValue)}
-        sx={{ mb: 3 }}
-      >
-        <Tab label="Поиск по гос. номеру" />
-        <Tab label="Поиск по номеру техпаспорта" />
-      </Tabs>
-
-      <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-        <TextField
-          fullWidth
-          label={searchType === 0 ? "Гос. номер" : "Номер техпаспорта"}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          error={!!error}
-          helperText={error}
-        />
+    <Box sx={{ 
+      padding: "20px",
+      maxWidth: "1200px",
+      margin: "0 auto"
+    }}>
+      <Box sx={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        mb: 3
+      }}>
+        <Typography variant="h4" sx={{ fontWeight: 500 }}>
+          Поиск
+        </Typography>
         <Button 
           variant="contained" 
-          onClick={handleSearch}
-          sx={{ minWidth: "120px" }}
+          component={Link} 
+          to="/" 
+          sx={{ 
+            minWidth: "120px",
+            backgroundColor: "primary.main"
+          }}
         >
-          Поиск
+          Назад
         </Button>
       </Box>
 
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Tabs 
+          value={searchType} 
+          onChange={(_, newValue) => setSearchType(newValue)}
+          sx={{ mb: 3 }}
+        >
+          <Tab label="Поиск по гос. номеру" />
+          <Tab label="Поиск по номеру техпаспорта" />
+        </Tabs>
+
+        <Box sx={{ 
+          display: "flex", 
+          gap: 2
+        }}>
+          <TextField
+            fullWidth
+            label={searchType === 0 ? "Гос. номер" : "Номер техпаспорта"}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            error={!!error}
+            helperText={error}
+            variant="outlined"
+          />
+          <Button 
+            variant="contained" 
+            onClick={handleSearch}
+            sx={{ 
+              minWidth: "120px",
+              height: "56px"
+            }}
+          >
+            Поиск
+          </Button>
+        </Box>
+      </Paper>
+
       {searchResult && (
-        <>
-          <TableContainer component={Paper} sx={{ mb: 3 }}>
+        <Paper sx={{ mb: 3 }}>
+          <TableContainer>
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Параметр</TableCell>
-                  <TableCell>Значение</TableCell>
+                  <TableCell sx={{ 
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}>
+                    Параметр
+                  </TableCell>
+                  <TableCell sx={{ 
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    fontWeight: 'bold'
+                  }}>
+                    Значение
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -287,17 +326,25 @@ const Search = () => {
             </Table>
           </TableContainer>
           
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Box sx={{ 
+            display: "flex", 
+            justifyContent: "flex-end",
+            p: 2,
+            borderTop: 1,
+            borderColor: 'divider'
+          }}>
             <Button 
               variant="contained" 
               color="primary" 
               onClick={generatePDF}
-              sx={{ mt: 2 }}
+              sx={{ 
+                minWidth: "200px"
+              }}
             >
               Распечатать справку
             </Button>
           </Box>
-        </>
+        </Paper>
       )}
     </Box>
   );
