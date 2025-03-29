@@ -13,7 +13,8 @@ import {
   TableRow,
   Paper,
   Tabs,
-  Tab
+  Tab,
+  Grid
 } from "@mui/material";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -36,7 +37,6 @@ interface SearchResult {
   note: string;
 }
 
-// Определяем типы для ключей
 type RegistrationType = 'primary' | 'replacement_number_and_tech_passport' | 'replacement_number_only' | 'replacement_tech_passport_only';
 type TerritorialDepartment = 'bishkek' | 'osh';
 type Organization = 'mvd' | 'gknb';
@@ -85,7 +85,6 @@ const Search = () => {
       compress: true
     });
 
-    // Маппинг для перевода значений
     const translations = {
       territorialDepartment: {
         bishkek: "г. Бишкек",
@@ -103,7 +102,6 @@ const Search = () => {
       } as const
     };
 
-    // Данные для таблицы
     const tableData = [
       ["Тип регистрации", translations.registrationType[searchResult.registrationType as RegistrationType] || searchResult.registrationType],
       ["Дата регистрации", searchResult.registrationDate],
@@ -123,16 +121,14 @@ const Search = () => {
     ];
 
     try {
-      // Добавляем заголовок
+
       pdf.setFontSize(16);
       pdf.text("СПРАВКА", pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
-      
-      // Добавляем дату
+
       pdf.setFontSize(12);
       const today = new Date().toLocaleDateString('ru-RU');
       pdf.text(`Дата: ${today}`, 20, 30);
 
-      // Параметры таблицы
       const startY = 40;
       const margin = 20;
       const cellPadding = 5;
@@ -152,22 +148,18 @@ const Search = () => {
           currentY = startY;
         }
 
-        // Рисуем ячейки
         pdf.rect(margin, currentY, col1Width, 10);
         pdf.rect(margin + col1Width, currentY, col2Width, 10);
 
-        // Добавляем текст (используем encodeURIComponent для кириллицы)
         pdf.text(encodeURIComponent(String(label)), margin + cellPadding, currentY + 7);
         pdf.text(encodeURIComponent(String(value || '')), margin + col1Width + cellPadding, currentY + 7);
 
         currentY += 10;
       });
 
-      // Добавляем подпись
       currentY += 20;
       pdf.text(encodeURIComponent("Подпись ответственного лица: _________________"), margin, currentY);
 
-      // Сохраняем PDF
       pdf.save('справка.pdf');
     } catch (error) {
       console.error('Ошибка при создании PDF:', error);
@@ -178,7 +170,7 @@ const Search = () => {
   return (
     <Box sx={{ 
       padding: "20px",
-      maxWidth: "1200px",
+      maxWidth: "100%",
       margin: "0 auto"
     }}>
       <Box sx={{ 
@@ -262,66 +254,12 @@ const Search = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell>Тип регистрации</TableCell>
-                  <TableCell>{searchResult.registrationType}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Дата регистрации</TableCell>
-                  <TableCell>{searchResult.registrationDate}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Дата получения</TableCell>
-                  <TableCell>{searchResult.receiveDate}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Территориальный отдел</TableCell>
-                  <TableCell>{searchResult.territorialDepartment}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Район</TableCell>
-                  <TableCell>{searchResult.district}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Наименование органа</TableCell>
-                  <TableCell>{searchResult.organizationName}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Подразделение</TableCell>
-                  <TableCell>{searchResult.subdivision}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Адрес</TableCell>
-                  <TableCell>{searchResult.address}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Гос. номер</TableCell>
-                  <TableCell>{searchResult.stateNumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Номер техпаспорта</TableCell>
-                  <TableCell>{searchResult.techPassportNumber}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Срок окончания</TableCell>
-                  <TableCell>{searchResult.expirationDate}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Дата сдачи</TableCell>
-                  <TableCell>{searchResult.submissionDate}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Дата сдачи гос. номера</TableCell>
-                  <TableCell>{searchResult.stateNumberSubmissionDate}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>ФИО</TableCell>
-                  <TableCell>{searchResult.fullName}</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>Примечание</TableCell>
-                  <TableCell>{searchResult.note}</TableCell>
-                </TableRow>
+                {Object.entries(searchResult).map(([key, value]) => (
+                  <TableRow key={key}>
+                    <TableCell>{key}</TableCell>
+                    <TableCell>{value}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TableContainer>
