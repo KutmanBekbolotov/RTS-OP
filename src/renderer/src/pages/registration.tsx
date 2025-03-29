@@ -76,7 +76,6 @@ const Registration = () => {
 
   const handleSubmit = async () => {
     try {
-      // Преобразуем даты в строки перед отправкой
       const dataToSend = {
         ...formData,
         registrationDate: formData.registrationDate?.toISOString().split('T')[0] || null,
@@ -89,7 +88,6 @@ const Registration = () => {
       await window.electron.addRegistration(dataToSend);
       alert("Данные успешно сохранены!");
       
-      // Очищаем форму после успешного сохранения
       setFormData({
         registrationType: "",
         registrationDate: null,
