@@ -47,18 +47,6 @@ const Registration = () => {
     gknb: ["9-отдел", "АТЦ", "КЦКБ"]
   };
 
-  const registrationTypes = {
-    primary: "Первичная",
-    replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
-    replacement_number_only: "Замена гос номера без замены техпаспорта",
-    replacement_tech_passport_only: "Замена тех паспорта без замены гос номера"
-  };
-
-  const organizationNames = {
-    mvd: "МВД",
-    gknb: "ГКНБ"
-  };
-
   const handleChange = (field: keyof RegistrationFormData, value: any) => {
     setFormData({
       ...formData,
@@ -83,41 +71,6 @@ const Registration = () => {
       } else {
         setSubdivisions([]);
       }
-    }
-  };
-
-  const handleSubmit = async () => {
-    try {
-      if (!window.electron) {
-        console.error('Electron API не доступен');
-        alert('Ошибка: Electron API не доступен');
-        return;
-      }
-
-      if (!formData.registrationType || !formData.stateNumber || !formData.techPassportNumber) {
-        alert("Пожалуйста, заполните обязательные поля");
-        return;
-      }
-
-      const dataToSend = {
-        ...formData,
-        registrationType: registrationTypes[formData.registrationType as keyof typeof registrationTypes],
-        organizationName: organizationNames[formData.organizationName as keyof typeof organizationNames],
-        registrationDate: formData.registrationDate?.toISOString().split('T')[0] || null,
-        receiveDate: formData.receiveDate?.toISOString().split('T')[0] || null,
-        expirationDate: formData.expirationDate?.toISOString().split('T')[0] || null,
-        submissionDate: formData.submissionDate?.toISOString().split('T')[0] || null,
-        stateNumberSubmissionDate: formData.stateNumberSubmissionDate?.toISOString().split('T')[0] || null,
-      };
-
-      console.log('Вызываем addRegistration с данными:', dataToSend);
-      const result = await window.electron.addRegistration(dataToSend);
-      console.log('Получен результат:', result);
-
-      alert("Данные успешно сохранены!");
-    } catch (error) {
-      console.error('Ошибка при сохранении:', error);
-      alert(error instanceof Error ? error.message : "Ошибка при сохранении данных");
     }
   };
 
@@ -301,7 +254,7 @@ const Registration = () => {
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
         <Button variant="contained" component={Link} to="/" sx={{ mb: 2 }}>Назад</Button>
-        <Button variant="contained" onClick={handleSubmit}>Отправить</Button>
+        <Button variant="contained" onClick={() => alert("Form submitted")}>Отправить</Button>
       </Box>
     </Box>
   );
