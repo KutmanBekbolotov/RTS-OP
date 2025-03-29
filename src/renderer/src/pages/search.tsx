@@ -15,6 +15,8 @@ import {
   Tabs,
   Tab
 } from "@mui/material";
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface SearchResult {
   registrationType: string;
@@ -33,6 +35,11 @@ interface SearchResult {
   fullName: string;
   note: string;
 }
+
+// Определяем типы для ключей
+type RegistrationType = 'primary' | 'replacement_number_and_tech_passport' | 'replacement_number_only' | 'replacement_tech_passport_only';
+type TerritorialDepartment = 'bishkek' | 'osh';
+type Organization = 'mvd' | 'gknb';
 
 const Search = () => {
   const [searchType, setSearchType] = useState(0);
@@ -67,13 +74,114 @@ const Search = () => {
     }
   };
 
+  const generatePDF = async () => {
+    if (!searchResult) return;
+
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4',
+      putOnlyUsedFonts: true,
+      compress: true
+    });
+
+    // Маппинг для перевода значений
+    const translations = {
+      territorialDepartment: {
+        bishkek: "г. Бишкек",
+        osh: "г. Ош"
+      } as const,
+      organization: {
+        mvd: "МВД",
+        gknb: "ГКНБ"
+      } as const,
+      registrationType: {
+        primary: "Первичная",
+        replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
+        replacement_number_only: "Замена гос номера без замены техпаспорта",
+        replacement_tech_passport_only: "Замена тех паспорта без замены гос номера"
+      } as const
+    };
+
+    // Данные для таблицы
+    const tableData = [
+      ["Тип регистрации", translations.registrationType[searchResult.registrationType as RegistrationType] || searchResult.registrationType],
+      ["Дата регистрации", searchResult.registrationDate],
+      ["Дата получения", searchResult.receiveDate],
+      ["Территориальный отдел", translations.territorialDepartment[searchResult.territorialDepartment as TerritorialDepartment] || searchResult.territorialDepartment],
+      ["Район", searchResult.district],
+      ["Наименование органа", translations.organization[searchResult.organizationName as Organization] || searchResult.organizationName],
+      ["Подразделение", searchResult.subdivision],
+      ["Адрес", searchResult.address],
+      ["Гос. номер", searchResult.stateNumber],
+      ["Номер техпаспорта", searchResult.techPassportNumber],
+      ["Срок окончания", searchResult.expirationDate],
+      ["Дата сдачи", searchResult.submissionDate],
+      ["Дата сдачи гос. номера", searchResult.stateNumberSubmissionDate],
+      ["ФИО", searchResult.fullName],
+      ["Примечание", searchResult.note]
+    ];
+
+    try {
+      // Добавляем заголовок
+      pdf.setFontSize(16);
+      pdf.text("СПРАВКА", pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
+      
+      // Добавляем дату
+      pdf.setFontSize(12);
+      const today = new Date().toLocaleDateString('ru-RU');
+      pdf.text(`Дата: ${today}`, 20, 30);
+
+      // Параметры таблицы
+      const startY = 40;
+      const margin = 20;
+      const cellPadding = 5;
+      const fontSize = 10;
+      pdf.setFontSize(fontSize);
+
+      // Размеры колонок
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const col1Width = 70;
+      const col2Width = pageWidth - (2 * margin) - col1Width;
+
+      // Рисуем таблицу
+      let currentY = startY;
+      tableData.forEach(([label, value]) => {
+        if (currentY > pdf.internal.pageSize.getHeight() - 20) {
+          pdf.addPage();
+          currentY = startY;
+        }
+
+        // Рисуем ячейки
+        pdf.rect(margin, currentY, col1Width, 10);
+        pdf.rect(margin + col1Width, currentY, col2Width, 10);
+
+        // Добавляем текст (используем encodeURIComponent для кириллицы)
+        pdf.text(encodeURIComponent(String(label)), margin + cellPadding, currentY + 7);
+        pdf.text(encodeURIComponent(String(value || '')), margin + col1Width + cellPadding, currentY + 7);
+
+        currentY += 10;
+      });
+
+      // Добавляем подпись
+      currentY += 20;
+      pdf.text(encodeURIComponent("Подпись ответственного лица: _________________"), margin, currentY);
+
+      // Сохраняем PDF
+      pdf.save('справка.pdf');
+    } catch (error) {
+      console.error('Ошибка при создании PDF:', error);
+      alert('Ошибка при создании PDF');
+    }
+  };
+
   return (
     <Box sx={{ padding: "20px" }}>
       <Typography variant="h4" gutterBottom>
         Поиск
       </Typography>
       
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Button variant="contained" component={Link} to="/" sx={{ mb: 2 }}>Назад</Button>
       </Box>
 
@@ -105,78 +213,91 @@ const Search = () => {
       </Box>
 
       {searchResult && (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Параметр</TableCell>
-                <TableCell>Значение</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              <TableRow>
-                <TableCell>Тип регистрации</TableCell>
-                <TableCell>{searchResult.registrationType}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Дата регистрации</TableCell>
-                <TableCell>{searchResult.registrationDate}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Дата получения</TableCell>
-                <TableCell>{searchResult.receiveDate}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Территориальный отдел</TableCell>
-                <TableCell>{searchResult.territorialDepartment}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Район</TableCell>
-                <TableCell>{searchResult.district}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Наименование органа</TableCell>
-                <TableCell>{searchResult.organizationName}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Подразделение</TableCell>
-                <TableCell>{searchResult.subdivision}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Адрес</TableCell>
-                <TableCell>{searchResult.address}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Гос. номер</TableCell>
-                <TableCell>{searchResult.stateNumber}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Номер техпаспорта</TableCell>
-                <TableCell>{searchResult.techPassportNumber}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Срок окончания</TableCell>
-                <TableCell>{searchResult.expirationDate}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Дата сдачи</TableCell>
-                <TableCell>{searchResult.submissionDate}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Дата сдачи гос. номера</TableCell>
-                <TableCell>{searchResult.stateNumberSubmissionDate}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>ФИО</TableCell>
-                <TableCell>{searchResult.fullName}</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>Примечание</TableCell>
-                <TableCell>{searchResult.note}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <>
+          <TableContainer component={Paper} sx={{ mb: 3 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Параметр</TableCell>
+                  <TableCell>Значение</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>Тип регистрации</TableCell>
+                  <TableCell>{searchResult.registrationType}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Дата регистрации</TableCell>
+                  <TableCell>{searchResult.registrationDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Дата получения</TableCell>
+                  <TableCell>{searchResult.receiveDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Территориальный отдел</TableCell>
+                  <TableCell>{searchResult.territorialDepartment}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Район</TableCell>
+                  <TableCell>{searchResult.district}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Наименование органа</TableCell>
+                  <TableCell>{searchResult.organizationName}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Подразделение</TableCell>
+                  <TableCell>{searchResult.subdivision}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Адрес</TableCell>
+                  <TableCell>{searchResult.address}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Гос. номер</TableCell>
+                  <TableCell>{searchResult.stateNumber}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Номер техпаспорта</TableCell>
+                  <TableCell>{searchResult.techPassportNumber}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Срок окончания</TableCell>
+                  <TableCell>{searchResult.expirationDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Дата сдачи</TableCell>
+                  <TableCell>{searchResult.submissionDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Дата сдачи гос. номера</TableCell>
+                  <TableCell>{searchResult.stateNumberSubmissionDate}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>ФИО</TableCell>
+                  <TableCell>{searchResult.fullName}</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell>Примечание</TableCell>
+                  <TableCell>{searchResult.note}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={generatePDF}
+              sx={{ mt: 2 }}
+            >
+              Распечатать справку
+            </Button>
+          </Box>
+        </>
       )}
     </Box>
   );
