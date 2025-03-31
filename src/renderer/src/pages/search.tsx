@@ -13,8 +13,7 @@ import {
   TableRow,
   Paper,
   Tabs,
-  Tab,
-  Grid
+  Tab
 } from "@mui/material";
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -121,7 +120,6 @@ const Search = () => {
     ];
 
     try {
-
       pdf.setFontSize(16);
       pdf.text("СПРАВКА", pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
 
@@ -135,12 +133,10 @@ const Search = () => {
       const fontSize = 10;
       pdf.setFontSize(fontSize);
 
-      // Размеры колонок
       const pageWidth = pdf.internal.pageSize.getWidth();
       const col1Width = 70;
       const col2Width = pageWidth - (2 * margin) - col1Width;
 
-      // Рисуем таблицу
       let currentY = startY;
       tableData.forEach(([label, value]) => {
         if (currentY > pdf.internal.pageSize.getHeight() - 20) {
@@ -168,16 +164,14 @@ const Search = () => {
   };
 
   return (
-    <Box sx={{ 
-      padding: "20px",
-      maxWidth: "100%",
-      margin: "0 auto"
-    }}>
+    <Box sx={{ padding: "20px", maxWidth: "100%", margin: "0 auto" }}>
       <Box sx={{ 
         display: "flex", 
         justifyContent: "space-between", 
         alignItems: "center",
-        mb: 3
+        position: "absolute",
+        top: 20,
+        width: "100%"
       }}>
         <Typography variant="h4" sx={{ fontWeight: 500 }}>
           Поиск
@@ -195,7 +189,7 @@ const Search = () => {
         </Button>
       </Box>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: 3, mt: 10 }}>
         <Tabs 
           value={searchType} 
           onChange={(_, newValue) => setSearchType(newValue)}
@@ -205,10 +199,7 @@ const Search = () => {
           <Tab label="Поиск по номеру техпаспорта" />
         </Tabs>
 
-        <Box sx={{ 
-          display: "flex", 
-          gap: 2
-        }}>
+        <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             fullWidth
             label={searchType === 0 ? "Гос. номер" : "Номер техпаспорта"}
@@ -221,10 +212,7 @@ const Search = () => {
           <Button 
             variant="contained" 
             onClick={handleSearch}
-            sx={{ 
-              minWidth: "120px",
-              height: "56px"
-            }}
+            sx={{ minWidth: "120px", height: "56px" }}
           >
             Поиск
           </Button>
@@ -232,57 +220,43 @@ const Search = () => {
       </Paper>
 
       {searchResult && (
-        <Paper sx={{ mb: 3 }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ 
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}>
-                    Параметр
-                  </TableCell>
-                  <TableCell sx={{ 
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    fontWeight: 'bold'
-                  }}>
-                    Значение
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {Object.entries(searchResult).map(([key, value]) => (
-                  <TableRow key={key}>
-                    <TableCell>{key}</TableCell>
-                    <TableCell>{value}</TableCell>
+        <Box sx={{ mt: 4 }}>
+          <Paper sx={{ p: 3 }}>
+            <TableContainer>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ backgroundColor: 'primary.main', color: 'white', fontWeight: 'bold' }}>
+                      Параметр
+                    </TableCell>
+                    <TableCell sx={{ backgroundColor: 'primary.main', color: 'white', fontWeight: 'bold' }}>
+                      Значение
+                    </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          
-          <Box sx={{ 
-            display: "flex", 
-            justifyContent: "flex-end",
-            p: 2,
-            borderTop: 1,
-            borderColor: 'divider'
-          }}>
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={generatePDF}
-              sx={{ 
-                minWidth: "200px"
-              }}
-            >
-              Распечатать справку
-            </Button>
-          </Box>
-        </Paper>
+                </TableHead>
+                <TableBody>
+                  {Object.entries(searchResult).map(([key, value]) => (
+                    <TableRow key={key}>
+                      <TableCell>{key}</TableCell>
+                      <TableCell>{value}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            
+            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, borderTop: 1, borderColor: 'divider' }}>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                onClick={generatePDF}
+                sx={{ minWidth: "200px" }}
+              >
+                Распечатать справку
+              </Button>
+            </Box>
+          </Paper>
+        </Box>
       )}
     </Box>
   );

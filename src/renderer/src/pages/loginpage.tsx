@@ -24,11 +24,14 @@ const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<Reac
     <Box 
       sx={{ 
         display: "flex", 
+        flexDirection: "column", 
         justifyContent: "center", 
         alignItems: "center", 
         height: "100vh", 
+        width: "100vw", 
         bgcolor: "#f5f5f5",
-        position: "relative" // Позволяет позиционировать герб относительно родителя
+        textAlign: "center",
+        padding: 2
       }}
     >
       <Paper 
@@ -37,10 +40,19 @@ const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<Reac
           padding: 3, 
           boxShadow: 3, 
           borderRadius: 2, 
-          bgcolor: "white" 
+          bgcolor: "white",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center"
         }}
       >
-        <Typography variant="h5" align="center" sx={{ fontWeight: 600, mb: 2 }}>
+        <img 
+          src={gerb} 
+          alt="Герб КР" 
+          width={100} 
+          style={{ marginBottom: "10px" }}
+        />
+        <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
           Введите пароль для входа
         </Typography>
         <TextField
@@ -48,14 +60,11 @@ const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<Reac
           label="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          sx={{ 
-            width: "100%", 
-            mb: 2 
-          }}
+          sx={{ width: "100%", mb: 2 }}
           variant="outlined"
           fullWidth
         />
-        {error && <Typography color="error" align="center" sx={{ mb: 2 }}>{error}</Typography>}
+        {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
         <Button 
           variant="contained" 
           onClick={handleLogin} 
@@ -70,16 +79,6 @@ const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<Reac
           Войти
         </Button>
       </Paper>
-      <img 
-        src={gerb} 
-        alt="Герб КР" 
-        width={400}
-        style={{
-          position: "absolute", 
-          right: -550,  
-          bottom: 250   
-        }} 
-      />
     </Box>
   );
 };
