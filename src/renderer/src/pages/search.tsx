@@ -1,23 +1,22 @@
-import { useState } from "react";
-import { Link } from "react-router-dom"; 
-import { 
-  TextField, 
-  Button, 
-  Box, 
-  Typography, 
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Paper,
+  Tabs,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Tabs,
-  Tab
+  TableRow
 } from "@mui/material";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import TechPassportPrint from "@/components/TechPassportPrint"; // Импортируем компонент для печати техпаспорта
 
+// Тип для результатов поиска
 interface SearchResult {
   registrationType: string;
   registrationDate: string;
@@ -36,162 +35,113 @@ interface SearchResult {
   note: string;
 }
 
-type RegistrationType = 'primary' | 'replacement_number_and_tech_passport' | 'replacement_number_only' | 'replacement_tech_passport_only';
-type TerritorialDepartment = 'bishkek' | 'osh';
-type Organization = 'mvd' | 'gknb';
+// Тип для состояния поиска
+type RegistrationType =
+  | "primary"
+  | "replacement_number_and_tech_passport"
+  | "replacement_number_only"
+  | "replacement_tech_passport_only";
+
+const translations = {
+  registrationType: {
+    primary: "Первичная",
+    replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
+    replacement_number_only: "Замена гос номера без замены техпаспорта",
+    replacement_tech_passport_only: "Замена техпаспорта без замены гос номера",
+  } as Record<string, string>,
+};
 
 const Search = () => {
   const [searchType, setSearchType] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showTechPassport, setShowTechPassport] = useState(false); // Для отображения компонента техпаспорта
 
+  // Функция для выполнения поиска
   const handleSearch = async () => {
-    try {
-      setError(null);
-      if (!searchQuery.trim()) {
-        setError("Введите номер для поиска");
-        return;
-      }
-
-      const searchBy = searchType === 0 ? "stateNumber" : "techPassportNumber";
-      const result = await window.electron.searchVehicle({ 
-        type: searchBy, 
-        query: searchQuery 
-      });
-
-      if (!result) {
-        setError("Ничего не найдено");
-        setSearchResult(null);
-        return;
-      }
-
-      setSearchResult(result);
-    } catch (err) {
-      setError("Произошла ошибка при поиске");
-      console.error(err);
+    setError(null);
+    if (!searchQuery.trim()) {
+      setError("Введите номер для поиска");
+      return;
     }
-  };
 
-  const generatePDF = async () => {
-    if (!searchResult) return;
-
-    const pdf = new jsPDF({
-      orientation: 'p',
-      unit: 'mm',
-      format: 'a4',
-      putOnlyUsedFonts: true,
-      compress: true
+    const searchBy = searchType === 0 ? "stateNumber" : "techPassportNumber";
+    const result = await window.electron.searchVehicle({
+      type: searchBy,
+      query: searchQuery,
     });
 
-    const translations = {
-      territorialDepartment: {
-        bishkek: "г. Бишкек",
-        osh: "г. Ош"
-      } as const,
-      organization: {
-        mvd: "МВД",
-        gknb: "ГКНБ"
-      } as const,
-      registrationType: {
-        primary: "Первичная",
-        replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
-        replacement_number_only: "Замена гос номера без замены техпаспорта",
-        replacement_tech_passport_only: "Замена тех паспорта без замены гос номера"
-      } as const
-    };
-
-    const tableData = [
-      ["Тип регистрации", translations.registrationType[searchResult.registrationType as RegistrationType] || searchResult.registrationType],
-      ["Дата регистрации", searchResult.registrationDate],
-      ["Дата получения", searchResult.receiveDate],
-      ["Территориальный отдел", translations.territorialDepartment[searchResult.territorialDepartment as TerritorialDepartment] || searchResult.territorialDepartment],
-      ["Район", searchResult.district],
-      ["Наименование органа", translations.organization[searchResult.organizationName as Organization] || searchResult.organizationName],
-      ["Подразделение", searchResult.subdivision],
-      ["Адрес", searchResult.address],
-      ["Гос. номер", searchResult.stateNumber],
-      ["Номер техпаспорта", searchResult.techPassportNumber],
-      ["Срок окончания", searchResult.expirationDate],
-      ["Дата сдачи", searchResult.submissionDate],
-      ["Дата сдачи гос. номера", searchResult.stateNumberSubmissionDate],
-      ["ФИО", searchResult.fullName],
-      ["Примечание", searchResult.note]
-    ];
-
-    try {
-      pdf.setFontSize(16);
-      pdf.text("СПРАВКА", pdf.internal.pageSize.getWidth() / 2, 20, { align: "center" });
-
-      pdf.setFontSize(12);
-      const today = new Date().toLocaleDateString('ru-RU');
-      pdf.text(`Дата: ${today}`, 20, 30);
-
-      const startY = 40;
-      const margin = 20;
-      const cellPadding = 5;
-      const fontSize = 10;
-      pdf.setFontSize(fontSize);
-
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const col1Width = 70;
-      const col2Width = pageWidth - (2 * margin) - col1Width;
-
-      let currentY = startY;
-      tableData.forEach(([label, value]) => {
-        if (currentY > pdf.internal.pageSize.getHeight() - 20) {
-          pdf.addPage();
-          currentY = startY;
-        }
-
-        pdf.rect(margin, currentY, col1Width, 10);
-        pdf.rect(margin + col1Width, currentY, col2Width, 10);
-
-        pdf.text(encodeURIComponent(String(label)), margin + cellPadding, currentY + 7);
-        pdf.text(encodeURIComponent(String(value || '')), margin + col1Width + cellPadding, currentY + 7);
-
-        currentY += 10;
-      });
-
-      currentY += 20;
-      pdf.text(encodeURIComponent("Подпись ответственного лица: _________________"), margin, currentY);
-
-      pdf.save('справка.pdf');
-    } catch (error) {
-      console.error('Ошибка при создании PDF:', error);
-      alert('Ошибка при создании PDF');
+    if (!result) {
+      setError("Ничего не найдено");
+      setSearchResult(null);
+    } else {
+      setSearchResult(result);
     }
   };
 
+  // Функция для печати
+  const handlePrint = () => {
+    window.print();
+  };
+
+  // Функция для отображения техпаспорта
+  const handlePrintTechPassport = () => {
+    setShowTechPassport(true); // Показываем компонент для печати техпаспорта
+  };
+
+  // Рендеринг поля для таблицы
+  const renderField = (label: string, value: string | null) => (
+    <TableRow>
+      <TableCell sx={{ border: "1px solid black", padding: "6px" }}>
+        {label}
+      </TableCell>
+      <TableCell sx={{ border: "1px solid black", padding: "6px" }}>
+        {value || "-"}
+      </TableCell>
+    </TableRow>
+  );
+
   return (
-    <Box sx={{ padding: "20px", maxWidth: "100%", margin: "0 auto" }}>
-      <Box sx={{ 
-        display: "flex", 
-        justifyContent: "space-between", 
-        alignItems: "center",
-        position: "absolute",
-        top: 20,
-        width: "100%"
-      }}>
+    <Box
+      sx={{
+        padding: "20px",
+        maxWidth: "100%",
+        margin: "0 auto",
+        "@media print": {
+          padding: 0,
+        },
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          position: "absolute",
+          top: 20,
+          width: "100%",
+          "@media print": {
+            display: "none",
+          },
+        }}
+      >
         <Typography variant="h4" sx={{ fontWeight: 500 }}>
           Поиск
         </Typography>
-        <Button 
-          variant="contained" 
-          component={Link} 
-          to="/" 
-          sx={{ 
-            minWidth: "120px",
-            backgroundColor: "primary.main"
-          }}
+        <Button
+          variant="contained"
+          component={Link}
+          to="/"
+          sx={{ minWidth: "120px" }}
         >
           Назад
         </Button>
       </Box>
 
-      <Paper sx={{ p: 3, mt: 10 }}>
-        <Tabs 
-          value={searchType} 
+      <Paper sx={{ p: 3, mt: 10, "@media print": { display: "none" } }}>
+        <Tabs
+          value={searchType}
           onChange={(_, newValue) => setSearchType(newValue)}
           sx={{ mb: 3 }}
         >
@@ -209,8 +159,8 @@ const Search = () => {
             helperText={error}
             variant="outlined"
           />
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             onClick={handleSearch}
             sx={{ minWidth: "120px", height: "56px" }}
           >
@@ -220,43 +170,96 @@ const Search = () => {
       </Paper>
 
       {searchResult && (
-        <Box sx={{ mt: 4 }}>
-          <Paper sx={{ p: 3 }}>
+        <Box
+          sx={{
+            mt: 4,
+            "@media print": {
+              mt: 0,
+              width: "210mm",
+              minHeight: "330mm",
+              padding: "30mm",
+              boxSizing: "border-box",
+            },
+          }}
+        >
+          <Paper
+            sx={{
+              p: 3,
+              "@media print": {
+                p: 0,
+                boxShadow: "none",
+                border: "none",
+              },
+            }}
+          >
+            <Typography
+              variant="h5"
+              align="center"
+              sx={{
+                fontWeight: "bold",
+                mb: 2,
+                "@media print": { mt: 0, fontSize: "24px" },
+              }}
+            >
+              СПРАВКА
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{ mb: 2, fontSize: "16px", "@media print": { fontSize: "14px" } }}
+            >
+              Дата: {new Date().toLocaleDateString("ru-RU")}
+            </Typography>
+
             <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell sx={{ backgroundColor: 'primary.main', color: 'white', fontWeight: 'bold' }}>
-                      Параметр
-                    </TableCell>
-                    <TableCell sx={{ backgroundColor: 'primary.main', color: 'white', fontWeight: 'bold' }}>
-                      Значение
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
+              <Table sx={{ border: "1px solid black" }}>
                 <TableBody>
-                  {Object.entries(searchResult).map(([key, value]) => (
-                    <TableRow key={key}>
-                      <TableCell>{key}</TableCell>
-                      <TableCell>{value}</TableCell>
-                    </TableRow>
-                  ))}
+                  {renderField(
+                    "Тип регистрации",
+                    translations.registrationType[
+                      searchResult.registrationType as RegistrationType
+                    ] || searchResult.registrationType
+                  )}
+                  {renderField("Дата регистрации", searchResult.registrationDate)}
+                  {renderField("Дата получения", searchResult.receiveDate)}
+                  {renderField("Территориальный отдел", searchResult.territorialDepartment)}
+                  {renderField("Наименование органа", searchResult.organizationName)}
+                  {renderField("Подразделение", searchResult.subdivision)}
+                  {renderField("Адрес", searchResult.address)}
+                  {renderField("Гос. номер", searchResult.stateNumber)}
+                  {renderField("Номер техпаспорта", searchResult.techPassportNumber)}
+                  {renderField("Срок окончания", searchResult.expirationDate)}
+                  {renderField("Дата сдачи", searchResult.submissionDate)}
+                  {renderField("Дата сдачи гос. номера", searchResult.stateNumberSubmissionDate)}
+                  {renderField("ФИО", searchResult.fullName)}
+                  {renderField("Примечание", searchResult.note)}
                 </TableBody>
               </Table>
             </TableContainer>
-            
-            <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2, borderTop: 1, borderColor: 'divider' }}>
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={generatePDF}
-                sx={{ minWidth: "200px" }}
+
+            <Typography sx={{ mt: 4, fontSize: "16px" }}>
+              Подпись ответственного лица: _______________________
+            </Typography>
+
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+              <Button variant="contained" onClick={handlePrint}>
+                Печать
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handlePrintTechPassport}
+                sx={{ ml: 2 }}
               >
-                Распечатать справку
+                Печать техпаспорта
               </Button>
             </Box>
           </Paper>
         </Box>
+      )}
+
+      {showTechPassport && searchResult && (
+        <TechPassportPrint searchResult={searchResult} />
       )}
     </Box>
   );
