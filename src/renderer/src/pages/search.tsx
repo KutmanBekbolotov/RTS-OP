@@ -14,9 +14,8 @@ import {
   TableContainer,
   TableRow
 } from "@mui/material";
-import TechPassportPrint from "@/components/TechPassportPrint"; // Импортируем компонент для печати техпаспорта
+import TechPassportPrint from "@/components/TechPassportPrint"; 
 
-// Тип для результатов поиска
 interface SearchResult {
   registrationType: string;
   registrationDate: string;

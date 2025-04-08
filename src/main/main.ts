@@ -1,7 +1,9 @@
+// main.ts
+
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import { createTable, insertRegistrationData } from "./database";
-import { openDatabase } from "./database";
+import { openDatabase } from "./database"; // Убедись, что импорт правильный
 
 let mainWindow: BrowserWindow;
 const PASSWORD = "123";
