@@ -19,26 +19,26 @@ interface FormData {
   stateNumberSubmissionDate: string;
   fullName: string;
   note: string;
+  model: string;
+  yearOfManufacture: string;
+  color: string;
+  vin: string;
+  chassisNumber: string;
+  bodyType: string;
+  seatCount: string;
+  fuelType: string;
+  engineCapacity: string;
+  enginePower: string;
+  unladenMass: string;
+  maxPermissibleMass: string;
+  registrationNumber: string;
+  vid: string;
+  owner: string;
+  personalNumber: string;
+  ownerAddress: string;
+  issuingAuthority: string;
+  authorizedSignature: string;
 }
-
-export interface SearchResult {
-  registrationType: string;
-  registrationDate: string;
-  receiveDate: string;
-  territorialDepartment: string;
-  district: string;
-  organizationName: string;
-  subdivision: string;
-  address: string;
-  stateNumber: string;
-  techPassportNumber: string;
-  expirationDate: string;
-  submissionDate: string;
-  stateNumberSubmissionDate: string;
-  fullName: string;
-  note: string;
-}
-
 
 const defaultForm: FormData = {
   registrationType: "",
@@ -55,6 +55,34 @@ const defaultForm: FormData = {
   stateNumberSubmissionDate: "",
   fullName: "",
   note: "",
+  model: "",
+  yearOfManufacture: "",
+  color: "",
+  vin: "",
+  chassisNumber: "",
+  bodyType: "",
+  seatCount: "",
+  fuelType: "",
+  engineCapacity: "",
+  enginePower: "",
+  unladenMass: "",
+  maxPermissibleMass: "",
+  registrationNumber: "",
+  vid: "",
+  owner: "",
+  personalNumber: "",
+  ownerAddress: "",
+  issuingAuthority: "",
+  authorizedSignature: "",
+};
+
+export type SearchResult = {
+  stateNumber: string;
+  techPassportNumber: string;
+  registrationType: string;
+  registrationDate: string;
+  receiveDate: string;
+  territorialDepartment: string;
 };
 
 const RegistrationForm = () => {
@@ -69,11 +97,25 @@ const RegistrationForm = () => {
     try {
       const dataToSend = {
         ...formData,
-        registrationDate: formData.registrationDate || null,
-        receiveDate: formData.receiveDate || null,
-        expirationDate: formData.expirationDate || null,
-        submissionDate: formData.submissionDate || null,
-        stateNumberSubmissionDate: formData.stateNumberSubmissionDate || null,
+        model: formData.model || "",
+        yearOfManufacture: formData.yearOfManufacture || "",
+        color: formData.color || "",
+        vin: formData.vin || "",
+        chassisNumber: formData.chassisNumber || "",
+        bodyType: formData.bodyType || "",
+        seatCount: formData.seatCount || "",
+        fuelType: formData.fuelType || "",
+        engineCapacity: formData.engineCapacity || "",
+        enginePower: formData.enginePower || "",
+        unladenMass: formData.unladenMass || "",
+        maxPermissibleMass: formData.maxPermissibleMass || "",
+        registrationNumber: formData.registrationNumber || "",
+        vid: formData.vid || "",
+        owner: formData.owner || "",
+        personalNumber: formData.personalNumber || "",
+        ownerAddress: formData.ownerAddress || "",
+        issuingAuthority: formData.issuingAuthority || "",
+        authorizedSignature: formData.authorizedSignature || "",
       };
 
       await window.electron.addRegistration(dataToSend);
@@ -176,6 +218,159 @@ const RegistrationForm = () => {
         label="Примечание"
         value={formData.note}
         onChange={(e) => handleChange("note", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      {/* Дополнительные поля */}
+      <TextField
+        label="Модель"
+        value={formData.model}
+        onChange={(e) => handleChange("model", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Год выпуска"
+        value={formData.yearOfManufacture}
+        onChange={(e) => handleChange("yearOfManufacture", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Цвет"
+        value={formData.color}
+        onChange={(e) => handleChange("color", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="VIN"
+        value={formData.vin}
+        onChange={(e) => handleChange("vin", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Номер шасси"
+        value={formData.chassisNumber}
+        onChange={(e) => handleChange("chassisNumber", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Тип кузова"
+        value={formData.bodyType}
+        onChange={(e) => handleChange("bodyType", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Количество мест"
+        value={formData.seatCount}
+        onChange={(e) => handleChange("seatCount", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Тип топлива"
+        value={formData.fuelType}
+        onChange={(e) => handleChange("fuelType", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Объем двигателя"
+        value={formData.engineCapacity}
+        onChange={(e) => handleChange("engineCapacity", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Мощность двигателя"
+        value={formData.enginePower}
+        onChange={(e) => handleChange("enginePower", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Масса без нагрузки"
+        value={formData.unladenMass}
+        onChange={(e) => handleChange("unladenMass", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Макс. разрешенная масса"
+        value={formData.maxPermissibleMass}
+        onChange={(e) => handleChange("maxPermissibleMass", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Регистрационный номер"
+        value={formData.registrationNumber}
+        onChange={(e) => handleChange("registrationNumber", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="VID"
+        value={formData.vid}
+        onChange={(e) => handleChange("vid", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Владелец"
+        value={formData.owner}
+        onChange={(e) => handleChange("owner", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Личный номер"
+        value={formData.personalNumber}
+        onChange={(e) => handleChange("personalNumber", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Адрес владельца"
+        value={formData.ownerAddress}
+        onChange={(e) => handleChange("ownerAddress", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Выдавший орган"
+        value={formData.issuingAuthority}
+        onChange={(e) => handleChange("issuingAuthority", e.target.value)}
+        fullWidth
+        sx={{ mb: 2 }}
+      />
+
+      <TextField
+        label="Авторизованная подпись"
+        value={formData.authorizedSignature}
+        onChange={(e) => handleChange("authorizedSignature", e.target.value)}
         fullWidth
         sx={{ mb: 2 }}
       />
