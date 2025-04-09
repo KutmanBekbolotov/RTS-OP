@@ -1,9 +1,7 @@
-// main.ts
-
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
 import { createTable, insertRegistrationData } from "./database";
-import { openDatabase } from "./database"; // Убедись, что импорт правильный
+import { openDatabase } from "./database"; 
 
 let mainWindow: BrowserWindow;
 const PASSWORD = "123";
@@ -38,7 +36,6 @@ const createWindow = () => {
   });
 };
 
-// Добавляем проверку пароля
 ipcMain.handle("check-password", async (_event, inputPassword) => {
   return inputPassword === PASSWORD;
 });

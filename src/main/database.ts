@@ -22,7 +22,6 @@ export const createTable = async () => {
         registrationDate TEXT,
         receiveDate TEXT,
         territorialDepartment TEXT,
-        district TEXT,
         organizationName TEXT,
         subdivision TEXT,
         address TEXT,
@@ -67,7 +66,7 @@ export const insertRegistrationData = async (formData: any) => {
   // Убедитесь, что все обязательные данные присутствуют
   const requiredFields = [
     'registrationType', 'registrationDate', 'receiveDate', 'territorialDepartment', 
-    'district', 'organizationName', 'subdivision', 'address', 'stateNumber', 
+    'organizationName', 'subdivision', 'address', 'stateNumber', 
     'techPassportNumber', 'expirationDate', 'submissionDate', 'stateNumberSubmissionDate', 
     'fullName', 'note', 'model', 'yearOfManufacture', 'color', 'vin', 'chassisNumber', 
     'bodyType', 'seatCount', 'fuelType', 'engineCapacity', 'enginePower', 'unladenMass', 
@@ -89,7 +88,7 @@ export const insertRegistrationData = async (formData: any) => {
   try {
     const result = await db.run(`
       INSERT INTO registrations (
-        registrationType, registrationDate, receiveDate, territorialDepartment, district, 
+        registrationType, registrationDate, receiveDate, territorialDepartment, 
         organizationName, subdivision, address, stateNumber, techPassportNumber, 
         expirationDate, submissionDate, stateNumberSubmissionDate, fullName, note, 
         model, yearOfManufacture, color, vin, chassisNumber, bodyType, seatCount, 

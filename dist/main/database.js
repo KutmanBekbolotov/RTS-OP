@@ -1,5 +1,4 @@
 "use strict";
-// database.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -28,7 +27,6 @@ const createTable = async () => {
         registrationDate TEXT,
         receiveDate TEXT,
         territorialDepartment TEXT,
-        district TEXT,
         organizationName TEXT,
         subdivision TEXT,
         address TEXT,
@@ -70,54 +68,44 @@ exports.createTable = createTable;
 // Функция для вставки данных регистрации
 const insertRegistrationData = async (formData) => {
     const db = await (0, exports.openDatabase)();
-    const result = await db.run(`
-    INSERT INTO registrations (
-      registrationType, registrationDate, receiveDate, territorialDepartment,
-      district, organizationName, subdivision, address, stateNumber,
-      techPassportNumber, expirationDate, submissionDate,
-      stateNumberSubmissionDate, fullName, note,
-      model, yearOfManufacture, color, vin, chassisNumber,
-      bodyType, seatCount, fuelType, engineCapacity, enginePower,
-      unladenMass, maxPermissibleMass, registrationNumber, vid,
-      owner, personalNumber, ownerAddress, issuingAuthority, authorizedSignature
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [
-        formData.registrationType,
-        formData.registrationDate,
-        formData.receiveDate,
-        formData.territorialDepartment,
-        formData.district,
-        formData.organizationName,
-        formData.subdivision,
-        formData.address,
-        formData.stateNumber,
-        formData.techPassportNumber,
-        formData.expirationDate,
-        formData.submissionDate,
-        formData.stateNumberSubmissionDate,
-        formData.fullName,
-        formData.note,
-        formData.model,
-        formData.yearOfManufacture,
-        formData.color,
-        formData.vin,
-        formData.chassisNumber,
-        formData.bodyType,
-        formData.seatCount,
-        formData.fuelType,
-        formData.engineCapacity,
-        formData.enginePower,
-        formData.unladenMass,
-        formData.maxPermissibleMass,
-        formData.registrationNumber,
-        formData.vid,
-        formData.owner,
-        formData.personalNumber,
-        formData.ownerAddress,
-        formData.issuingAuthority,
-        formData.authorizedSignature,
-    ]);
-    return result;
+    // Убедитесь, что все обязательные данные присутствуют
+    const requiredFields = [
+        'registrationType', 'registrationDate', 'receiveDate', 'territorialDepartment',
+        'organizationName', 'subdivision', 'address', 'stateNumber',
+        'techPassportNumber', 'expirationDate', 'submissionDate', 'stateNumberSubmissionDate',
+        'fullName', 'note', 'model', 'yearOfManufacture', 'color', 'vin', 'chassisNumber',
+        'bodyType', 'seatCount', 'fuelType', 'engineCapacity', 'enginePower', 'unladenMass',
+        'maxPermissibleMass', 'registrationNumber', 'vid', 'owner', 'personalNumber',
+        'ownerAddress', 'issuingAuthority', 'authorizedSignature'
+    ];
+    // Проверяем, что все обязательные поля присутствуют
+    for (const field of requiredFields) {
+        if (!(field in formData)) {
+            throw new Error(`Отсутствует обязательное поле: ${field}`);
+        }
+    }
+    // Формируем запрос на вставку данных
+    const placeholders = requiredFields.map(() => '?').join(', ');
+    const values = requiredFields.map(field => formData[field]);
+    try {
+        const result = await db.run(`
+      INSERT INTO registrations (
+        registrationType, registrationDate, receiveDate, territorialDepartment, 
+        organizationName, subdivision, address, stateNumber, techPassportNumber, 
+        expirationDate, submissionDate, stateNumberSubmissionDate, fullName, note, 
+        model, yearOfManufacture, color, vin, chassisNumber, bodyType, seatCount, 
+        fuelType, engineCapacity, enginePower, unladenMass, maxPermissibleMass, 
+        registrationNumber, vid, owner, personalNumber, ownerAddress, issuingAuthority, 
+        authorizedSignature
+      ) 
+      VALUES (${placeholders})
+    `, values);
+        console.log("Данные успешно вставлены в базу данных");
+        return result;
+    }
+    catch (error) {
+        console.error("Ошибка при вставке данных:", error);
+        throw error;
+    }
 };
 exports.insertRegistrationData = insertRegistrationData;

@@ -1,5 +1,4 @@
 "use strict";
-// main.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -7,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 const database_1 = require("./database");
-const database_2 = require("./database"); // Убедись, что импорт правильный
+const database_2 = require("./database");
 let mainWindow;
 const PASSWORD = "123";
 const createWindow = () => {
@@ -34,7 +33,6 @@ const createWindow = () => {
         mainWindow = null;
     });
 };
-// Добавляем проверку пароля
 electron_1.ipcMain.handle("check-password", async (_event, inputPassword) => {
     return inputPassword === PASSWORD;
 });
