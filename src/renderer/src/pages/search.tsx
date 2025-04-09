@@ -14,7 +14,7 @@ import {
   TableContainer,
   TableRow
 } from "@mui/material";
-import TechPassportPrint from "@/components/TechPassportPrint"; 
+import TechPassportPrint from "../components/TechPassportPrint"; 
 
 interface SearchResult {
   registrationType: string;
