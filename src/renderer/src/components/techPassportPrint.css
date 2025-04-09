@@ -1,0 +1,158 @@
+.tech-passport-print {
+  border: 1px solid red;
+  margin: 20px 0px;
+  padding: 0px 1.5mm;
+  width: 14.8cm; 
+  height: 10.5cm;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  display: flex;
+  gap: 24px;
+  padding-top: 2cm;
+}
+
+.main-info-left,
+.main-info-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-info-right {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14% !important;
+}
+
+.tech-passport-print .model,
+.tech-passport-print .yearOfManifacture,
+.tech-passport-print .colour,
+.tech-passport-print .vehicleNumber,
+.tech-passport-print .carBodyNum,
+.tech-passport-print .carBodyType,
+.tech-passport-print .quantitySeats,
+.tech-passport-print .fuelType,
+.tech-passport-print .engineCapacity,
+.tech-passport-print .enginePower,
+.tech-passport-print .unladenMass,
+.tech-passport-print .maxPermissibleMass,
+.tech-passport-print .registerNumber,
+.tech-passport-print .vid,
+.tech-passport-print .owner,
+.tech-passport-print .personalNumber,
+.tech-passport-print .address,
+.tech-passport-print .issuingAuthority,
+.tech-passport-print .registerDate,
+.tech-passport-print .signature {
+  display: flex;
+  justify-content: space-between;
+  width: 7cm;  
+  align-items: center;
+  height: 6.7mm;
+  font-size: 13px;
+}
+
+@media print {
+  .tech-passport-print .model,
+  .tech-passport-print .yearOfManifacture,
+  .tech-passport-print .colour,
+  .tech-passport-print .vehicleNumber,
+  .tech-passport-print .carBodyNum,
+  .tech-passport-print .carBodyType,
+  .tech-passport-print .quantitySeats,
+  .tech-passport-print .fuelType,
+  .tech-passport-print .engineCapacity,
+  .tech-passport-print .enginePower,
+  .tech-passport-print .unladenMass,
+  .tech-passport-print .maxPermissibleMass,
+  .tech-passport-print .registerNumber,
+  .tech-passport-print .vid,
+  .tech-passport-print .owner,
+  .tech-passport-print .personalNumber,
+  .tech-passport-print .address,
+  .tech-passport-print .issuingAuthority,
+  .tech-passport-print .registerDate,
+  .tech-passport-print .signature {
+    display: none;  /* Скрыть элементы при печати */
+  }
+
+  .tech-passport-print .model span,
+  .tech-passport-print .yearOfManifacture span,
+  .tech-passport-print .colour span,
+  .tech-passport-print .vehicleNumber span,
+  .tech-passport-print .carBodyNum span,
+  .tech-passport-print .carBodyType span,
+  .tech-passport-print .quantitySeats span,
+  .tech-passport-print .fuelType span,
+  .tech-passport-print .engineCapacity span,
+  .tech-passport-print .enginePower span,
+  .tech-passport-print .unladenMass span,
+  .tech-passport-print .maxPermissibleMass span,
+  .tech-passport-print .registerNumber span,
+  .tech-passport-print .vid span,
+  .tech-passport-print .owner span,
+  .tech-passport-print .personalNumber span,
+  .tech-passport-print .address span,
+  .tech-passport-print .issuingAuthority span,
+  .tech-passport-print .registerDate span,
+  .tech-passport-print .signature span {
+    display: inline-block;  /* Показывать только текст */
+  }
+
+  /* Параметры для печати */
+  @page {
+    size: 15cm 10cm;
+    margin: 0;
+  }
+
+  .tech-passport-print {
+    width: 15cm;
+    height: 10cm;
+    overflow: hidden;
+    page-break-inside: avoid;
+  }
+
+  .tech-passport-print .container {
+    position: relative;
+    border: 1px solid black;
+    padding: 1rem;
+  }
+
+  .tech-passport-print .header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+
+  .tech-passport-print .header .right {
+    text-align: right;
+  }
+
+  .tech-passport-print .main-info {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .tech-passport-print .signature {
+    position: absolute;
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .tech-passport-print .stamp {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    width: 5rem;
+    height: 5rem;
+    border: 1px solid black;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 10px;
+  }
+}
