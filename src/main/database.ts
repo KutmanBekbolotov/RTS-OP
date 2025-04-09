@@ -24,7 +24,6 @@ export const createTable = async () => {
         registrationDate TEXT,
         receiveDate TEXT,
         territorialDepartment TEXT,
-        district TEXT,
         organizationName TEXT,
         subdivision TEXT,
         address TEXT,
