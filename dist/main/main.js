@@ -1,4 +1,5 @@
 "use strict";
+// main.ts
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -6,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 const database_1 = require("./database");
-const database_2 = require("./database");
+const database_2 = require("./database"); // Убедись, что импорт правильный
 let mainWindow;
 const PASSWORD = "123";
 const createWindow = () => {

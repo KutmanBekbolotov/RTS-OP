@@ -62,47 +62,52 @@ export const createTable = async () => {
 // Функция для вставки данных регистрации
 export const insertRegistrationData = async (formData: any) => {
   const db = await openDatabase();
-  
-  // Убедитесь, что все обязательные данные присутствуют
-  const requiredFields = [
-    'registrationType', 'registrationDate', 'receiveDate', 'territorialDepartment', 
-    'organizationName', 'subdivision', 'address', 'stateNumber', 
-    'techPassportNumber', 'expirationDate', 'submissionDate', 'stateNumberSubmissionDate', 
-    'fullName', 'note', 'model', 'yearOfManufacture', 'color', 'vin', 'chassisNumber', 
-    'bodyType', 'seatCount', 'fuelType', 'engineCapacity', 'enginePower', 'unladenMass', 
-    'maxPermissibleMass', 'registrationNumber', 'vid', 'owner', 'personalNumber', 
-    'ownerAddress', 'issuingAuthority', 'authorizedSignature'
-  ];
-
-  // Проверяем, что все обязательные поля присутствуют
-  for (const field of requiredFields) {
-    if (!(field in formData)) {
-      throw new Error(`Отсутствует обязательное поле: ${field}`);
-    }
-  }
-
-  // Формируем запрос на вставку данных
-  const placeholders = requiredFields.map(() => '?').join(', ');
-  const values = requiredFields.map(field => formData[field]);
-
-  try {
-    const result = await db.run(`
-      INSERT INTO registrations (
-        registrationType, registrationDate, receiveDate, territorialDepartment, 
-        organizationName, subdivision, address, stateNumber, techPassportNumber, 
-        expirationDate, submissionDate, stateNumberSubmissionDate, fullName, note, 
-        model, yearOfManufacture, color, vin, chassisNumber, bodyType, seatCount, 
-        fuelType, engineCapacity, enginePower, unladenMass, maxPermissibleMass, 
-        registrationNumber, vid, owner, personalNumber, ownerAddress, issuingAuthority, 
-        authorizedSignature
-      ) 
-      VALUES (${placeholders})
-    `, values);
-
-    console.log("Данные успешно вставлены в базу данных");
-    return result;
-  } catch (error) {
-    console.error("Ошибка при вставке данных:", error);
-    throw error;
-  }
+  const result = await db.run(`
+    INSERT INTO registrations (
+      registrationType, registrationDate, receiveDate, territorialDepartment,
+      organizationName, subdivision, address, stateNumber,
+      techPassportNumber, expirationDate, submissionDate,
+      stateNumberSubmissionDate, fullName, note,
+      model, yearOfManufacture, color, vin, chassisNumber,
+      bodyType, seatCount, fuelType, engineCapacity, enginePower,
+      unladenMass, maxPermissibleMass, registrationNumber, vid,
+      owner, personalNumber, ownerAddress, issuingAuthority, authorizedSignature
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `, [
+    formData.registrationType,
+    formData.registrationDate,
+    formData.receiveDate,
+    formData.territorialDepartment,
+    formData.organizationName,
+    formData.subdivision,
+    formData.address,
+    formData.stateNumber,
+    formData.techPassportNumber,
+    formData.expirationDate,
+    formData.submissionDate,
+    formData.stateNumberSubmissionDate,
+    formData.fullName,
+    formData.note,
+    formData.model,
+    formData.yearOfManufacture,
+    formData.color,
+    formData.vin,
+    formData.chassisNumber,
+    formData.bodyType,
+    formData.seatCount,
+    formData.fuelType,
+    formData.engineCapacity,
+    formData.enginePower,
+    formData.unladenMass,
+    formData.maxPermissibleMass,
+    formData.registrationNumber,
+    formData.vid,
+    formData.owner,
+    formData.personalNumber,
+    formData.ownerAddress,
+    formData.issuingAuthority,
+    formData.authorizedSignature,
+  ]);
+  return result;
 };

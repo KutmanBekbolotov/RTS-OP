@@ -14,32 +14,46 @@ import {
   TableContainer,
   TableRow
 } from "@mui/material";
-import TechPassportPrint from "../components/TechPassportPrint"; 
+import TechPassportPrint from "@/components/TechPassportPrint";
 
-interface SearchResult {
-  registrationType: string;
-  registrationDate: string;
-  receiveDate: string;
-  territorialDepartment: string;
-  district: string;
-  organizationName: string;
-  subdivision: string;
-  address: string;
-  stateNumber: string;
-  techPassportNumber: string;
-  expirationDate: string;
-  submissionDate: string;
-  stateNumberSubmissionDate: string;
-  fullName: string;
-  note: string;
+export interface SearchResult {
+  registrationType: string | null;
+  registrationDate: string | null;
+  receiveDate: string | null;
+  territorialDepartment: string | null;
+  district: string | null;
+  organizationName: string | null;
+  subdivision: string | null;
+  address: string | null;
+  stateNumber: string | null;
+  techPassportNumber: string | null;
+  expirationDate: string | null;
+  submissionDate: string | null;
+  stateNumberSubmissionDate: string | null;
+  fullName: string | null;
+  note: string | null;
+
+  model: string | null;
+  yearOfManufacture: string | null;
+  color: string | null;
+  vin: string | null;
+  chassisNumber: string | null;
+  bodyType: string | null;
+  seatCount: string | null;
+  fuelType: string | null;
+  registrationNumber: string | null;
+  vid: string | null;
+  owner: string | null;
+  personalNumber: string | null;
+  ownerAddress: string | null;
+  issuingAuthority: string | null;
+  authorizedSignature: string | null;
+
+  engineCapacity: string | null;
+  enginePower: string | null;
+  unladenMass: string | null;
+  maxPermissibleMass: string | null;
 }
-
-// Тип для состояния поиска
-type RegistrationType =
-  | "primary"
-  | "replacement_number_and_tech_passport"
-  | "replacement_number_only"
-  | "replacement_tech_passport_only";
 
 const translations = {
   registrationType: {
@@ -47,17 +61,21 @@ const translations = {
     replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
     replacement_number_only: "Замена гос номера без замены техпаспорта",
     replacement_tech_passport_only: "Замена техпаспорта без замены гос номера",
-  } as Record<string, string>,
+  },
 };
+
+type RegistrationType =
+  | "primary"
+  | "replacement_number_and_tech_passport"
+  | "replacement_number_only"
+  | "replacement_tech_passport_only";
 
 const Search = () => {
   const [searchType, setSearchType] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [showTechPassport, setShowTechPassport] = useState(false); // Для отображения компонента техпаспорта
 
-  // Функция для выполнения поиска
   const handleSearch = async () => {
     setError(null);
     if (!searchQuery.trim()) {
@@ -79,17 +97,10 @@ const Search = () => {
     }
   };
 
-  // Функция для печати
   const handlePrint = () => {
     window.print();
   };
 
-  // Функция для отображения техпаспорта
-  const handlePrintTechPassport = () => {
-    setShowTechPassport(true); // Показываем компонент для печати техпаспорта
-  };
-
-  // Рендеринг поля для таблицы
   const renderField = (label: string, value: string | null) => (
     <TableRow>
       <TableCell sx={{ border: "1px solid black", padding: "6px" }}>
@@ -232,6 +243,10 @@ const Search = () => {
                   {renderField("Дата сдачи гос. номера", searchResult.stateNumberSubmissionDate)}
                   {renderField("ФИО", searchResult.fullName)}
                   {renderField("Примечание", searchResult.note)}
+                  {renderField("Объем двигателя", searchResult.engineCapacity)}
+                  {renderField("Мощность двигателя", searchResult.enginePower)}
+                  {renderField("Собственная масса", searchResult.unladenMass)}
+                  {renderField("Макс. разрешенная масса", searchResult.maxPermissibleMass)}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -244,22 +259,12 @@ const Search = () => {
               <Button variant="contained" onClick={handlePrint}>
                 Печать
               </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={handlePrintTechPassport}
-                sx={{ ml: 2 }}
-              >
-                Печать техпаспорта
-              </Button>
             </Box>
           </Paper>
         </Box>
       )}
 
-      {showTechPassport && searchResult && (
-        <TechPassportPrint searchResult={searchResult} />
-      )}
+      {searchResult && <TechPassportPrint searchResult={searchResult} />}
     </Box>
   );
 };

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TextField, Button, Box, Typography, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import gerb from "../assets/gerb.svg";
+import gerb from "../assets/gerb.svg"
 
 const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>> }) => {
   const [password, setPassword] = useState("");
