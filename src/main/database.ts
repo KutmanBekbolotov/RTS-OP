@@ -67,7 +67,7 @@ export const insertRegistrationData = async (formData: any) => {
   const result = await db.run(`
     INSERT INTO registrations (
       registrationType, registrationDate, receiveDate, territorialDepartment,
-      district, organizationName, subdivision, address, stateNumber,
+      organizationName, subdivision, address, stateNumber,
       techPassportNumber, expirationDate, submissionDate,
       stateNumberSubmissionDate, fullName, note,
       model, yearOfManufacture, color, vin, chassisNumber,
@@ -75,13 +75,12 @@ export const insertRegistrationData = async (formData: any) => {
       unladenMass, maxPermissibleMass, registrationNumber, vid,
       owner, personalNumber, ownerAddress, issuingAuthority, authorizedSignature
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `, [
     formData.registrationType,
     formData.registrationDate,
     formData.receiveDate,
     formData.territorialDepartment,
-    formData.district,
     formData.organizationName,
     formData.subdivision,
     formData.address,
@@ -92,7 +91,6 @@ export const insertRegistrationData = async (formData: any) => {
     formData.stateNumberSubmissionDate,
     formData.fullName,
     formData.note,
-
     formData.model,
     formData.yearOfManufacture,
     formData.color,
