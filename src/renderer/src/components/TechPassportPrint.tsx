@@ -2,6 +2,7 @@ import React from "react";
 import { SearchResult } from "./types";
 import "./techPassportPrint.css";
 
+
 interface TechPassportProps {
   searchResult: SearchResult;
 }
@@ -90,7 +91,8 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
               <h6>СОБСТВЕННИК</h6>
               <span>{searchResult.owner || "-"}</span>
             </div>
-
+            </div>
+            <div className="main-info-right-bottom">
             <div className="personalNumber">
               <h6>ПИН, ИСН</h6>
               <span>{searchResult.personalNumber || "-"}</span>
@@ -115,7 +117,9 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
               <h6>ПОДПИСЬ УПОЛНОМОЧЕННОГО ЛИЦА</h6>
               <span>{searchResult.authorizedSignature || "-"}</span>
             </div>
-          </div>
+            </div>
+          
+      
         </div>
       </div>
     </div>

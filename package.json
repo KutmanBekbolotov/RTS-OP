@@ -30,7 +30,9 @@
     "@mui/material": "^7.0.1",
     "@mui/x-date-pickers": "^7.28.2",
     "better-sqlite3": "^11.9.1",
+    "electron-print-preview": "^2.2.0",
     "react-router-dom": "^7.4.1",
+    "react-to-print": "^3.0.6",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }
