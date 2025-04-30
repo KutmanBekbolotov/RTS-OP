@@ -100,10 +100,10 @@ const Search = () => {
       clone.style.position = "static";
       clone.style.top = "";
       clone.style.left = "";
-
+  
       const tempDiv = document.createElement("div");
       tempDiv.appendChild(clone);
-
+  
       const html = `
         <html>
           <head>
@@ -132,14 +132,11 @@ const Search = () => {
           <body>${tempDiv.innerHTML}</body>
         </html>
       `;
-
-      const pdfPath = await window.electron.openPDFPreview(html);
-      if (pdfPath) {
-        await window.electron.printGeneratedPDF(pdfPath);
-      }
+  
+      await window.electron.openPDFPreview(html); // Только сохраняем PDF
     }
   };
-
+  
   const renderField = (label: string, value: string | null) => (
     <TableRow>
       <TableCell sx={{ border: "1px solid black", padding: "6px" }}>{label}</TableCell>
@@ -268,28 +265,31 @@ const Search = () => {
                   justify-content: space-between;
                 }
                 .main-info-left {
-                  font-size: 22px;
+                  font-size: 19px;
                   display: flex;
                   flex-direction: column;
-                  gap: 15px;
+                  gap: 45px;
                   margin-left: 70%;
-                  padding-top: 22%;
+                  padding-top: 23%;
                 }
                 .main-info-right {
-                  font-size: 22px;
+                  font-size: 19px;
                   display: flex;
                   flex-direction: column;
-                  gap: 15px;
-                  margin-left: 35%;
+                  gap: 17%;
+                  margin-left: 60%;
                   padding-top: 22%;
-                  justify-content: space-between;
                   height: 100%;
                 }
-                .main-info-right-top,
+                .main-info-right-top{
+                   display: flex;
+                  flex-direction: column;
+                     gap: 40px;
+                }
                 .main-info-right-bottom {
                   display: flex;
                   flex-direction: column;
-                  gap: 20px;
+                  gap: 60px;
                 }
                 .tech-passport-print {
                   width: 100%;

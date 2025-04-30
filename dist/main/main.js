@@ -38,9 +38,9 @@ const createWindow = () => {
 };
 electron_1.ipcMain.handle('print-generated-pdf', async (_event, pdfPath) => {
     console.log('Печать PDF:', pdfPath);
+    const acrobatPath = `"C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\Acrobat.exe"`;
     try {
-        // На Windows
-        (0, child_process_1.exec)(`start /WAIT acrord32.exe /h /t "${pdfPath}"`, (error) => {
+        (0, child_process_1.exec)(`${acrobatPath} /h /t "${pdfPath}"`, (error) => {
             if (error) {
                 console.error("Ошибка печати PDF:", error);
             }
