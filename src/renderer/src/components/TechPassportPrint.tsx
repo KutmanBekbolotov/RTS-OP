@@ -12,7 +12,9 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
   console.log("TechPassportPrint props:", searchResult);
   return (
     <div className="tech-passport-print">
+
       <div className="container">
+
         <div className="main-info-left">
           <div className="model">
             <h6>МАРКА, МОДЕЛЬ</h6>
@@ -92,8 +94,8 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
               <span>{searchResult.owner || "—————"}</span>
             </div>
             </div>
-            <div className="main-info-right-bottom">
-            <div className="personalNumber">
+            <div className="main-info-right-middle">
+          <div className="personalNumber">
               <h6>ПИН, ИСН</h6>
               <span>{searchResult.personalNumber || "—————"}</span>
             </div>
@@ -103,6 +105,9 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
               <span>{searchResult.ownerAddress || "—————"}</span>
             </div>
 
+          </div>
+            <div className="main-info-right-bottom">
+         
             <div className="issuingAuthority">
               <h6>ОРГАН ВЫДАЧИ</h6>
               <span>{searchResult.issuingAuthority || "—————"}</span>
@@ -118,9 +123,8 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
               <span>{searchResult.authorizedSignature || "—————"}</span>
             </div>
             </div>
-          
-      
         </div>
+        
       </div>
     </div>
   );

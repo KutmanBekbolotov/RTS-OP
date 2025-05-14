@@ -15,7 +15,6 @@ import {
   TableRow,
 } from "@mui/material";
 import TechPassportPrint from "@/components/TechPassportPrint";
-import { PrintWrapper } from "../components/PrintWrapper";
 
 export interface SearchResult {
   registrationType: string | null;
@@ -133,7 +132,7 @@ const Search = () => {
         </html>
       `;
   
-      await window.electron.openPDFPreview(html); // Только сохраняем PDF
+      await window.electron.openPDFPreview(html); 
     }
   };
   
@@ -258,54 +257,62 @@ const Search = () => {
                   padding: 0;
                   width: 100%;
                   height: 100%;
-                  size: 14.80cm 10.50cm;
                 }
                 .container {
                   display: flex;
-                  justify-content: space-between;
-                }
-                .main-info-left {
-                  font-size: 19px;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 45px;
-                  margin-left: 70%;
-                  padding-top: 23%;
-                }
-                .main-info-right {
-                  font-size: 19px;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 17%;
-                  margin-left: 60%;
-                  padding-top: 22%;
+                  width: 100%;
                   height: 100%;
-                }
+                  box-sizing: border-box;
+                  }
+              .main-info-left {
+  width: 100%;
+  padding-top: 14%;
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+  box-sizing: border-box;
+  align-items: flex-end;
+}
+
+.main-info-right {
+  width: 100%;
+  padding-top: 15%;
+  font-size: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+  align-items: flex-end;
+}
                 .main-info-right-top{
                    display: flex;
-                  flex-direction: column;
-                     gap: 40px;
+                   flex-direction: column;
+                   gap: 21px;
+                }
+                .main-info-right-middle{
+                   display: flex;
+                   flex-direction: column;
+                   gap: 25px;
+                   margin-top: 9%;
                 }
                 .main-info-right-bottom {
                   display: flex;
                   flex-direction: column;
-                  gap: 60px;
-                }
-                .tech-passport-print {
-                  width: 100%;
-                  height: 100%;
-                  -webkit-print-color-adjust: exact;
-                  print-color-adjust: exact;
-                  box-sizing: border-box;
-                  padding: 0;
-                  position: relative;
-                  display: flex;
-                  flex-direction: column;
-                  justify-content: space-between;
+                  gap: 15px;
+                  margin-top: 4%;
                 }
                 h6 {
                   display: none !important;
                 }
+                  .tech-passport-print {
+  width: 97%;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
               `}
             </style>
             <TechPassportPrint searchResult={searchResult} />
