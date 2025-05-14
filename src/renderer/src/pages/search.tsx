@@ -266,11 +266,11 @@ const Search = () => {
                   }
               .main-info-left {
   width: 100%;
-  padding-top: 14%;
+  padding-top: 15%;
   font-size: 9px;
   display: flex;
   flex-direction: column;
-  gap: 21px;
+  gap: 15px;
   box-sizing: border-box;
   align-items: flex-end;
 }
@@ -293,14 +293,14 @@ const Search = () => {
                 .main-info-right-middle{
                    display: flex;
                    flex-direction: column;
-                   gap: 25px;
-                   margin-top: 9%;
+                   gap: 20px;
+                   margin-top: 9.5%;
                 }
                 .main-info-right-bottom {
                   display: flex;
                   flex-direction: column;
-                  gap: 15px;
-                  margin-top: 4%;
+                  gap: 10px;
+                  margin-top: 3.8%;
                 }
                 h6 {
                   display: none !important;
