@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@mui/material";
 import TechPassportPrint from "@/components/TechPassportPrint";
+import CertificateContent from "@/components/certificateContent";
 
 export interface SearchResult {
   registrationType: string | null;
@@ -91,50 +92,48 @@ const Search = () => {
     }
   };
 
-  const handlePrint = async () => {
-    const printContent = document.getElementById("print-content");
-    if (printContent) {
-      const clone = printContent.cloneNode(true) as HTMLElement;
-      clone.style.visibility = "visible";
-      clone.style.position = "static";
-      clone.style.top = "";
-      clone.style.left = "";
-  
-      const tempDiv = document.createElement("div");
-      tempDiv.appendChild(clone);
-  
-      const html = `
-        <html>
-          <head>
-            <style>
-              @page {
-                size: auto;
-                margin: 0;
-              }
-              html, body {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-              }
-              .tech-passport-print {
-                width: 100vw;
-                height: 100vh;
-                box-sizing: border-box;
-                padding: 0;
-              }
-              * {
-                box-sizing: border-box;
-              }
-            </style>
-          </head>
-          <body>${tempDiv.innerHTML}</body>
-        </html>
-      `;
-  
-      await window.electron.openPDFPreview(html); 
-    }
-  };
+  const handlePrint = async (elementId: string) => {
+  const printContent = document.getElementById(elementId);
+  if (printContent) {
+    const clone = printContent.cloneNode(true) as HTMLElement;
+    clone.style.visibility = "visible";
+    clone.style.position = "static";
+
+    const tempDiv = document.createElement("div");
+    tempDiv.appendChild(clone);
+
+    const html = `
+      <html>
+        <head>
+          <style>
+            @page {
+              size: auto;
+              margin: 0;
+            }
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .tech-passport-print {
+              width: 100vw;
+              height: 100vh;
+              box-sizing: border-box;
+              padding: 0;
+            }
+            * {
+              box-sizing: border-box;
+            }
+          </style>
+        </head>
+        <body>${tempDiv.innerHTML}</body>
+      </html>
+    `;
+
+    await window.electron.openPDFPreview(html);
+  }
+};
   
   const renderField = (label: string, value: string | null) => (
     <TableRow>
@@ -185,142 +184,150 @@ const Search = () => {
         </Box>
       </Paper>
 
-      {searchResult && (
-        <>
-          <Box sx={{ mt: 4 }}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h5" align="center" sx={{ fontWeight: "bold", mb: 2 }}>
-                СПРАВКА
-              </Typography>
+     {searchResult && (
+  <>
+  <CertificateContent data={searchResult} />
 
-              <Typography variant="body2" sx={{ mb: 2, fontSize: "16px" }}>
-                Дата: {new Date().toLocaleDateString("ru-RU")}
-              </Typography>
+  <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
+    <Button variant="contained" onClick={() => handlePrint("print-certificate")}>
+      Печать справки
+    </Button>
+    <Button variant="contained" onClick={() => handlePrint("print-passport")}>
+      Печать техпаспорта
+    </Button>
+  </Box>
+    
+   <div
+  id="print-certificate"
+  style={{
+    position: "absolute",
+    top: "-9999px",
+    left: "-9999px",
+    width: "14.80cm",
+    height: "10.50cm",
+    visibility: "hidden",
+  }}
+>
+  <style>
+    {`
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
 
-              <TableContainer>
-                <Table sx={{ border: "1px solid black" }}>
-                  <TableBody>
-                    {renderField(
-                      "Тип регистрации",
-                      translations.registrationType[
-                        searchResult.registrationType as RegistrationType
-                      ] || searchResult.registrationType
-                    )}
-                    {renderField("Дата регистрации", searchResult.registrationDate)}
-                    {renderField("Дата получения", searchResult.receiveDate)}
-                    {renderField("Территориальный отдел", searchResult.territorialDepartment)}
-                    {renderField("Наименование органа", searchResult.organizationName)}
-                    {renderField("Подразделение", searchResult.subdivision)}
-                    {renderField("Адрес", searchResult.address)}
-                    {renderField("Гос. номер", searchResult.stateNumber)}
-                    {renderField("Номер техпаспорта", searchResult.techPassportNumber)}
-                    {renderField("Срок окончания", searchResult.expirationDate)}
-                    {renderField("Дата сдачи", searchResult.submissionDate)}
-                    {renderField("Дата сдачи гос. номера", searchResult.stateNumberSubmissionDate)}
-                    {renderField("ФИО", searchResult.fullName)}
-                    {renderField("Примечание", searchResult.note)}
-                    {renderField("Объем двигателя", searchResult.engineCapacity)}
-                    {renderField("Мощность двигателя", searchResult.enginePower)}
-                    {renderField("Собственная масса", searchResult.unladenMass)}
-                    {renderField("Макс. разрешенная масса", searchResult.maxPermissibleMass)}
-                  </TableBody>
-                </Table>
-              </TableContainer>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
 
-              <Typography sx={{ mt: 4, fontSize: "16px" }}>
-                Подпись ответственного лица: _______________________
-              </Typography>
+      td {
+        border: 1px solid black;
+        padding: 6px;
+        font-size: 12px;
+      }
 
-              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-                <Button variant="contained" onClick={handlePrint}>
-                  Предпросмотр и печать
-                </Button>
-              </Box>
-            </Paper>
-          </Box>
+      h5 {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 16px;
+      }
 
-          <div
-            id="print-content"
-            style={{
-              position: "absolute",
-              top: "-9999px",
-              left: "-9999px",
-              width: "14.80cm",
-              height: "10.50cm",
-              visibility: "hidden",
-            }}
-          >
-            <style>
-              {`
-                html, body {
-                  margin: 0;
-                  padding: 0;
-                  width: 100%;
-                  height: 100%;
-                }
-                .container {
-                  display: flex;
-                  width: 100%;
-                  height: 100%;
-                  box-sizing: border-box;
-                  }
-              .main-info-left {
-  width: 100%;
-  padding-top: 15%;
-  font-size: 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-sizing: border-box;
-  align-items: flex-end;
-}
+      .certificate-print {
+        padding: 16px;
+      }
+    `}
+  </style>
 
-.main-info-right {
-  width: 100%;
-  padding-top: 15%;
-  font-size: 9px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  box-sizing: border-box;
-  align-items: flex-end;
-}
-                .main-info-right-top{
-                   display: flex;
-                   flex-direction: column;
-                   gap: 21px;
-                }
-                .main-info-right-middle{
-                   display: flex;
-                   flex-direction: column;
-                   gap: 20px;
-                   margin-top: 9.5%;
-                }
-                .main-info-right-bottom {
-                  display: flex;
-                  flex-direction: column;
-                  gap: 10px;
-                  margin-top: 3.8%;
-                }
-                h6 {
-                  display: none !important;
-                }
-                  .tech-passport-print {
-  width: 97%;
-  height: 100%;
-  box-sizing: border-box;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-              `}
-            </style>
-            <TechPassportPrint searchResult={searchResult} />
-          </div>
-        </>
-      )}
+  <div className="certificate-print">
+    <CertificateContent data={searchResult} />
+  </div>
+</div>
+
+  <div
+  id="print-passport"
+  style={{
+    position: "absolute",
+    top: "-9999px",
+    left: "-9999px",
+    width: "14.80cm",
+    height: "10.50cm",
+    visibility: "hidden",
+  }}
+>
+  <style>
+    {`
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+      .main-info-left {
+        width: 100%;
+        padding-top: 15%;
+        font-size: 9px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        box-sizing: border-box;
+        align-items: flex-end;
+      }
+      .main-info-right {
+        width: 100%;
+        padding-top: 15%;
+        font-size: 9px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        box-sizing: border-box;
+        align-items: flex-end;
+      }
+      .main-info-right-top {
+        display: flex;
+        flex-direction: column;
+        gap: 21px;
+      }
+      .main-info-right-middle {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 9.5%;
+      }
+      .main-info-right-bottom {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 3.8%;
+      }
+      h6 {
+        display: none !important;
+      }
+      .tech-passport-print {
+        width: 97%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+      }
+    `}
+  </style>
+  <TechPassportPrint searchResult={searchResult} />
+</div>
+  </>
+)}
     </Box>
   );
 };
+
+
+
 
 export default Search;
