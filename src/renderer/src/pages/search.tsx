@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   TextField,
@@ -8,10 +8,7 @@ import {
   Paper,
   Tabs,
   Tab,
-  Table,
-  TableBody,
   TableCell,
-  TableContainer,
   TableRow,
 } from "@mui/material";
 import TechPassportPrint from "@/components/TechPassportPrint";
@@ -244,7 +241,7 @@ const Search = () => {
   </div>
 </div>
 
-  <div
+<div
   id="print-passport"
   style={{
     position: "absolute",
@@ -309,6 +306,17 @@ const Search = () => {
       h6 {
         display: none !important;
       }
+      .address {
+  align-self: flex-start;
+  width: 100%;
+}
+.address span {
+  display: block;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: left;
+}
       .tech-passport-print {
         width: 97%;
         height: 100%;

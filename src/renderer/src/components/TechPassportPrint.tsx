@@ -102,7 +102,9 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
 
             <div className="address">
               <h6>АДРЕС СОБСТВЕННИКА</h6>
-              <span>{searchResult.ownerAddress || "—————"}</span>
+             <span style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", display: "block", maxWidth: "100%" }}>
+              {searchResult.ownerAddress || "—————"}
+            </span>
             </div>
 
           </div>
