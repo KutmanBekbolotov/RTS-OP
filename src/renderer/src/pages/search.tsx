@@ -296,27 +296,31 @@ const Search = () => {
         flex-direction: column;
         gap: 20px;
         margin-top: 9.5%;
+        align-items: flex-end;
+        width: 50%;
       }
       .main-info-right-bottom {
         display: flex;
         flex-direction: column;
         gap: 10px;
         margin-top: 3.8%;
+        width: 20%;
       }
       h6 {
         display: none !important;
       }
       .address {
-  align-self: flex-start;
-  width: 100%;
-}
-.address span {
-  display: block;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-  text-align: left;
-}
+       align-items:flex-end
+       text-align: end;
+       width: 70%;
+      }
+      .address span {
+        display: block;
+        white-space: normal;
+        overflow-wrap: break-word;
+        word-break: break-word;
+        text-align: left;
+      }
       .tech-passport-print {
         width: 97%;
         height: 100%;

@@ -8,12 +8,22 @@ import { useState, useEffect } from "react";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
-    const authStatus = localStorage.getItem("isAuthenticated");
-    if (authStatus === "true") {
-      setIsAuthenticated(true);
+useEffect(() => {
+  const authStatus = localStorage.getItem("isAuthenticated");
+  if (authStatus === "true") {
+    setIsAuthenticated(true);
+  }
+
+  // 👇 Разогрев API с валидными аргументами
+  try {
+    if (window.electron) {
+      void window.electron.checkPassword?.("init");
+      void window.electron.searchVehicle?.({ type: "stateNumber", query: "__init__" });
     }
-  }, []);
+  } catch (_) {
+    // не важно, упадёт или нет — главное, чтоб Proxy инициализировался
+  }
+}, []);
 
   return (
     <Router>

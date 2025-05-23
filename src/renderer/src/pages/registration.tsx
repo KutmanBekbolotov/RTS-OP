@@ -104,7 +104,7 @@ const RegistrationForm = () => {
         submissionDate: spravkaData.submissionDate || null,
         stateNumberSubmissionDate: spravkaData.stateNumberSubmissionDate || null,
       };
-      console.log('Data to send:', dataToSend);
+      // console.log('Data to send:', dataToSend);
 
       await window.electron.addRegistration(dataToSend);
       alert("Данные успешно сохранены!");
