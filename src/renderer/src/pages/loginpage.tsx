@@ -8,15 +8,20 @@ const Login = ({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<Reac
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const correctPassword = "123"; 
-
-  const handleLogin = () => {
-    if (password === correctPassword) {
-      localStorage.setItem("isAuthenticated", "true");
-      setIsAuthenticated(true);
-      navigate("/"); 
-    } else {
-      setError("Неверный пароль");
+  const handleLogin = async () => {
+    try {
+      const isValid = await window.electron.checkPassword(password);
+      if (isValid) {
+        localStorage.setItem("isAuthenticated", "true");
+        setIsAuthenticated(true);
+        setError("");
+        navigate("/");
+      } else {
+        setError("Неверный пароль");
+      }
+    } catch (loginError) {
+      console.error("Ошибка авторизации:", loginError);
+      setError("Ошибка проверки пароля");
     }
   };
 

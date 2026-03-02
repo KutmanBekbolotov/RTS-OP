@@ -4,18 +4,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const electron_1 = require("electron");
+const child_process_1 = require("child_process");
+const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const database_1 = require("./database");
-const database_2 = require("./database");
-const { startPrint, initPrintPgae } = require("electron-print-preview");
-const fs_1 = __importDefault(require("fs"));
-const child_process_1 = require("child_process");
-let mainWindow;
-const PASSWORD = "123";
-const createWindow = () => {
-    const MAIN_PATH = path_1.default.join(__dirname, "..");
+let printPreviewLib = null;
+const getPrintPreviewLib = () => {
+    if (!printPreviewLib) {
+        printPreviewLib = require("electron-print-preview");
+    }
+    return printPreviewLib;
+};
+let mainWindow = null;
+const PASSWORD = process.env.RTS_OP_PASSWORD ?? "123";
+const ALLOWED_SEARCH_FIELDS = new Set(["stateNumber", "techPassportNumber"]);
+const createWindow = async () => {
     const preloadPath = path_1.default.join(__dirname, "preload.js");
-    console.log("Preload path:", preloadPath);
     mainWindow = new electron_1.BrowserWindow({
         width: 800,
         height: 600,
@@ -26,31 +30,49 @@ const createWindow = () => {
             sandbox: false,
         },
     });
-    mainWindow.loadURL("http://localhost:5173");
-    mainWindow.webContents.openDevTools();
-    mainWindow.webContents.on("did-finish-load", () => {
-        console.log("Window loaded");
-        mainWindow.webContents.executeJavaScript('console.log("electron api:", window.electron)');
-    });
+    const devServerUrl = process.env.ELECTRON_RENDERER_URL;
+    if (devServerUrl) {
+        await mainWindow.loadURL(devServerUrl);
+        mainWindow.webContents.openDevTools();
+    }
+    else {
+        const rendererCandidates = [
+            path_1.default.join(__dirname, "../renderer/index.html"),
+            path_1.default.join(__dirname, "../../src/renderer/dist/index.html"),
+            path_1.default.join(process.cwd(), "src/renderer/dist/index.html"),
+        ];
+        const rendererEntry = rendererCandidates.find((candidate) => fs_1.default.existsSync(candidate));
+        if (!rendererEntry) {
+            throw new Error("Renderer entry point not found. Run `npm run build:renderer` or set ELECTRON_RENDERER_URL.");
+        }
+        await mainWindow.loadFile(rendererEntry);
+    }
     mainWindow.on("closed", () => {
         mainWindow = null;
     });
 };
-electron_1.ipcMain.handle('print-generated-pdf', async (_event, pdfPath) => {
-    console.log('Печать PDF:', pdfPath);
-    const acrobatPath = `"C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\Acrobat.exe"`;
-    try {
-        (0, child_process_1.exec)(`${acrobatPath} /h /t "${pdfPath}"`, (error) => {
-            if (error) {
-                console.error("Ошибка печати PDF:", error);
-            }
-        });
+electron_1.ipcMain.handle("print-generated-pdf", async (_event, pdfPath) => {
+    if (!fs_1.default.existsSync(pdfPath)) {
+        throw new Error("PDF файл не найден");
     }
-    catch (error) {
-        console.error('Ошибка при отправке PDF в печать:', error);
+    if (process.platform === "win32") {
+        const acrobatPath = `"C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\Acrobat.exe"`;
+        if (fs_1.default.existsSync(acrobatPath.replace(/"/g, ""))) {
+            await new Promise((resolve, reject) => {
+                (0, child_process_1.exec)(`${acrobatPath} /h /t "${pdfPath}"`, (error) => {
+                    if (error) {
+                        reject(error);
+                        return;
+                    }
+                    resolve();
+                });
+            });
+            return;
+        }
     }
+    await electron_1.shell.openPath(pdfPath);
 });
-electron_1.ipcMain.handle('open-system-print', async (_event, html) => {
+electron_1.ipcMain.handle("open-system-print", async (_event, html) => {
     const printWindow = new electron_1.BrowserWindow({
         show: false,
         webPreferences: {
@@ -58,24 +80,24 @@ electron_1.ipcMain.handle('open-system-print', async (_event, html) => {
         },
     });
     await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-    setTimeout(() => {
+    await new Promise((resolve, reject) => {
         printWindow.webContents.print({
             silent: false,
             printBackground: true,
-            margins: { marginType: 'none' },
+            margins: { marginType: "none" },
         }, (success, errorType) => {
-            if (!success) {
-                console.error('❌ Print failed:', errorType);
-            }
-            else {
-                console.log('✅ Print success');
-            }
             printWindow.close();
+            if (!success) {
+                reject(new Error(errorType || "Print failed"));
+                return;
+            }
+            resolve();
         });
-    }, 100);
+    });
 });
 electron_1.ipcMain.handle("open-print-preview", async (_event, contentHTML) => {
     try {
+        const { initPrintPgae, startPrint } = getPrintPreviewLib();
         await initPrintPgae({
             style: `
         body {
@@ -94,6 +116,7 @@ electron_1.ipcMain.handle("open-print-preview", async (_event, contentHTML) => {
     }
     catch (err) {
         console.error("❌ Ошибка предпросмотра печати:", err);
+        throw err;
     }
 });
 electron_1.ipcMain.handle("open-browser-print", async (_event, contentHTML) => {
@@ -106,22 +129,22 @@ electron_1.ipcMain.handle("open-browser-print", async (_event, contentHTML) => {
         },
     });
     await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(`
-    <html>
-      <head>
-        <title>Предпросмотр</title>
-        <style>
-          @media print {
-            body {
-              -webkit-print-color-adjust: exact;
+      <html>
+        <head>
+          <title>Предпросмотр</title>
+          <style>
+            @media print {
+              body {
+                -webkit-print-color-adjust: exact;
+              }
             }
-          }
-        </style>
-      </head>
-      <body onload="window.print()">
-        ${contentHTML}
-      </body>
-    </html>
-  `)}`);
+          </style>
+        </head>
+        <body onload="window.print()">
+          ${contentHTML}
+        </body>
+      </html>
+    `)}`);
 });
 electron_1.ipcMain.handle("generate-pdf", async (_event, html) => {
     const win = new electron_1.BrowserWindow({ show: false });
@@ -133,10 +156,6 @@ electron_1.ipcMain.handle("generate-pdf", async (_event, html) => {
             left: 0,
             right: 0,
         },
-        // pageSize: {
-        //   width: 1480,  
-        //   height: 1050, 
-        // },
         printBackground: true,
         landscape: false,
     });
@@ -148,24 +167,12 @@ electron_1.ipcMain.handle("generate-pdf", async (_event, html) => {
 electron_1.ipcMain.handle("check-password", async (_event, inputPassword) => {
     return inputPassword === PASSWORD;
 });
-(async () => {
-    try {
-        await (0, database_1.createTable)();
-        console.log("База данных инициализирована");
-    }
-    catch (error) {
-        console.error("Ошибка при инициализации БД:", error);
-    }
-})();
-electron_1.app.whenReady().then(createWindow);
-electron_1.ipcMain.handle("insert-registration-data", async (event, formData) => {
+electron_1.ipcMain.handle("insert-registration-data", async (_event, formData) => {
     try {
         if (!formData) {
             throw new Error("Нет данных для сохранения");
         }
-        console.log("Получены данные для сохранения:", formData);
-        const result = await (0, database_1.insertRegistrationData)(formData);
-        console.log("Данные сохранены:", result);
+        await (0, database_1.insertRegistrationData)(formData);
         return { success: true, message: "Данные успешно сохранены!" };
     }
     catch (error) {
@@ -173,15 +180,40 @@ electron_1.ipcMain.handle("insert-registration-data", async (event, formData) =>
         throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");
     }
 });
-electron_1.ipcMain.handle("search-vehicle", async (_, searchParams) => {
-    try {
-        const db = await (0, database_2.openDatabase)();
-        const { type, query } = searchParams;
-        const result = await db.get(`SELECT * FROM registrations WHERE ${type} = ?`, [query]);
-        return result;
+electron_1.ipcMain.handle("search-vehicle", async (_event, searchParams) => {
+    const { type, query } = searchParams;
+    if (!ALLOWED_SEARCH_FIELDS.has(type)) {
+        throw new Error("Недопустимое поле для поиска");
     }
-    catch (error) {
-        console.error("Error searching vehicle:", error);
-        throw error;
+    const normalizedQuery = query.trim();
+    if (!normalizedQuery) {
+        return null;
+    }
+    const db = await (0, database_1.openDatabase)();
+    try {
+        return await db.get(`SELECT * FROM registrations WHERE ${type} = ?`, [normalizedQuery]);
+    }
+    finally {
+        await db.close();
+    }
+});
+electron_1.app
+    .whenReady()
+    .then(async () => {
+    await (0, database_1.createTable)();
+    await createWindow();
+    electron_1.app.on("activate", () => {
+        if (electron_1.BrowserWindow.getAllWindows().length === 0) {
+            void createWindow();
+        }
+    });
+})
+    .catch((error) => {
+    console.error("Ошибка запуска приложения:", error);
+    electron_1.app.quit();
+});
+electron_1.app.on("window-all-closed", () => {
+    if (process.platform !== "darwin") {
+        electron_1.app.quit();
     }
 });

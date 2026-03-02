@@ -1,8 +1,16 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Box, Button, Typography } from "@mui/material";
 import gerb from "../assets/gerb.svg";
 
-function Home() {
+function Home({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>> }) {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        localStorage.removeItem("isAuthenticated");
+        setIsAuthenticated(false);
+        navigate("/login");
+    };
+
     return (
         <Box sx={{ display: "flex", height: "100vh" }}>
             <Box
@@ -26,7 +34,7 @@ function Home() {
                 <Button component={Link} to="/directory" variant="contained" fullWidth>
                     Справочник
                 </Button>
-                <Button component={Link} to="/login" variant="contained" color="error" fullWidth>
+                <Button onClick={handleLogout} variant="contained" color="error" fullWidth>
                     Выход
                 </Button>
             </Box>
@@ -44,7 +52,7 @@ function Home() {
             >
                 <img src={gerb} alt="Герб КР" width={200} />
                 <Typography variant="h4" sx={{ mt: 2, maxWidth: "600px" }}>
-                    Государственное агентство по регистрации транспортных средств и водительского состава
+                    Государственное центр по регистрации транспортных средств и водительского состава
                 </Typography>
             </Box>
         </Box>

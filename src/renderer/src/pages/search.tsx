@@ -8,8 +8,6 @@ import {
   Paper,
   Tabs,
   Tab,
-  TableCell,
-  TableRow,
 } from "@mui/material";
 import TechPassportPrint from "@/components/TechPassportPrint";
 import CertificateContent from "@/components/certificateContent";
@@ -51,17 +49,6 @@ export interface SearchResult {
   maxPermissibleMass: string | null;
 }
 
-const translations = {
-  registrationType: {
-    primary: "Первичная",
-    replacement_number_and_tech_passport: "Замена гос номера и техпаспорта",
-    replacement_number_only: "Замена гос номера без замены техпаспорта",
-    replacement_tech_passport_only: "Замена техпаспорта без замены гос номера",
-  },
-};
-
-type RegistrationType = keyof typeof translations.registrationType;
-
 const Search = () => {
   const [searchType, setSearchType] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
@@ -70,28 +57,38 @@ const Search = () => {
 
   const handleSearch = async () => {
     setError(null);
-    if (!searchQuery.trim()) {
+    const normalizedQuery = searchQuery.trim();
+    if (!normalizedQuery) {
       setError("Введите номер для поиска");
       return;
     }
 
-    const searchBy = searchType === 0 ? "stateNumber" : "techPassportNumber";
-    const result = await window.electron.searchVehicle({
-      type: searchBy,
-      query: searchQuery,
-    });
+    try {
+      const searchBy = searchType === 0 ? "stateNumber" : "techPassportNumber";
+      const result = await window.electron.searchVehicle({
+        type: searchBy,
+        query: normalizedQuery,
+      });
 
-    if (!result) {
-      setError("Ничего не найдено");
+      if (!result) {
+        setError("Ничего не найдено");
+        setSearchResult(null);
+      } else {
+        setSearchResult(result);
+      }
+    } catch (searchError) {
+      console.error("Ошибка поиска:", searchError);
+      setError("Ошибка при выполнении поиска");
       setSearchResult(null);
-    } else {
-      setSearchResult(result);
     }
   };
 
   const handlePrint = async (elementId: string) => {
-  const printContent = document.getElementById(elementId);
-  if (printContent) {
+    const printContent = document.getElementById(elementId);
+    if (!printContent) {
+      return;
+    }
+
     const clone = printContent.cloneNode(true) as HTMLElement;
     clone.style.visibility = "visible";
     clone.style.position = "static";
@@ -128,16 +125,14 @@ const Search = () => {
       </html>
     `;
 
-    await window.electron.openPDFPreview(html);
-  }
-};
-  
-  const renderField = (label: string, value: string | null) => (
-    <TableRow>
-      <TableCell sx={{ border: "1px solid black", padding: "6px" }}>{label}</TableCell>
-      <TableCell sx={{ border: "1px solid black", padding: "6px" }}>{value || "-"}</TableCell>
-    </TableRow>
-  );
+    try {
+      const pdfPath = await window.electron.openPDFPreview(html);
+      await window.electron.printGeneratedPDF(pdfPath);
+    } catch (printError) {
+      console.error("Ошибка печати:", printError);
+      setError("Ошибка при печати документа");
+    }
+  };
 
   return (
     <Box sx={{ padding: "20px", maxWidth: "100%", margin: "0 auto" }}>
@@ -310,7 +305,7 @@ const Search = () => {
         display: none !important;
       }
       .address {
-       align-items:flex-end
+       align-items:flex-end;
        text-align: end;
        width: 70%;
       }

@@ -4,12 +4,14 @@
   "main": "dist/main/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build:ts && npm run build:renderer && electron .",
+    "start": "npm run build:ts && npm run build:renderer && env -u ELECTRON_RUN_AS_NODE electron .",
     "build": "electron-builder",
     "build:ts": "rimraf dist && tsc",
-    "build:renderer": "cd src/renderer && tsc --project tsconfig.app.json",
+    "build:renderer": "npm --prefix src/renderer run build",
+    "dev:renderer": "npm --prefix src/renderer run dev",
+    "dev:electron": "npm run build:ts && env -u ELECTRON_RUN_AS_NODE ELECTRON_RENDERER_URL=http://localhost:5173 electron .",
     "dev": "tsc -w",
-    "electron-dev": "electron ."
+    "electron-dev": "env -u ELECTRON_RUN_AS_NODE electron ."
   },
   "keywords": [],
   "author": "",
@@ -29,7 +31,6 @@
     "@mui/lab": "^7.0.0-beta.10",
     "@mui/material": "^7.0.1",
     "@mui/x-date-pickers": "^7.28.2",
-    "better-sqlite3": "^11.9.1",
     "electron-print-preview": "^2.2.0",
     "react-router-dom": "^7.4.1",
     "react-to-print": "^3.0.6",
