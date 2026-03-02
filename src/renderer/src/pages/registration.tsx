@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import { TextField, Button, Box, Typography, Snackbar, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 interface SpravkaProps {
@@ -83,6 +83,15 @@ const defaultTechPassport: TechPassportProps = {
 const RegistrationForm = () => {
   const [spravkaData, setSpravkaData] = useState<SpravkaProps>(defaultSpravka);
   const [techPassportData, setTechPassportData] = useState<TechPassportProps>(defaultTechPassport);
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
   const navigate = useNavigate();
 
   const handleChange = (field: string, value: string) => {
@@ -107,12 +116,20 @@ const RegistrationForm = () => {
       // console.log('Data to send:', dataToSend);
 
       await window.electron.addRegistration(dataToSend);
-      alert("Данные успешно сохранены!");
+      setNotification({
+        open: true,
+        message: "Данные успешно сохранены!",
+        severity: "success",
+      });
       setSpravkaData(defaultSpravka);
       setTechPassportData(defaultTechPassport);
     } catch (err) {
       console.error("Ошибка при сохранении:", err);
-      alert("Ошибка при сохранении данных.");
+      setNotification({
+        open: true,
+        message: "Ошибка при сохранении данных.",
+        severity: "error",
+      });
     }
   };
 
@@ -187,6 +204,22 @@ const RegistrationForm = () => {
           Сохранить
         </Button>
       </Box>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={3000}
+        onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setNotification((prev) => ({ ...prev, open: false }))}
+          severity={notification.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
