@@ -1,9 +1,12 @@
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { app } from 'electron';
+import path from 'path';
 
 export const openDatabase = async () => {
+  const dbPath = path.join(app.getPath('userData'), 'registration.db');
   return open({
-    filename: 'registration.db',
+    filename: dbPath,
     driver: sqlite3.Database,
   });
 };

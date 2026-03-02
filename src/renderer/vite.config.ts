@@ -12,7 +12,8 @@ export default defineConfig({
   },
   base: './',
   build: {
-    outDir: 'dist',
+    outDir: '../../dist/renderer',
+    emptyOutDir: true,
     assetsDir: '.',
   },
 })

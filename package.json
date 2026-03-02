@@ -5,7 +5,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build:ts && npm run build:renderer && env -u ELECTRON_RUN_AS_NODE electron .",
-    "build": "electron-builder",
+    "build": "npm run build:ts && npm run build:renderer",
+    "package": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder --linux AppImage deb",
+    "dist:win": "npm run build && electron-builder --win nsis portable",
+    "dist:linux": "npm run build && electron-builder --linux AppImage deb",
+    "dist:all": "npm run build && electron-builder --win nsis portable --linux AppImage deb",
     "build:ts": "rimraf dist && tsc",
     "build:renderer": "npm --prefix src/renderer run build",
     "dev:renderer": "npm --prefix src/renderer run dev",
@@ -16,7 +21,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Desktop приложение для регистрации оперативных автомобилей",
   "devDependencies": {
     "@types/react-dom": "^19.1.2",
     "@types/sqlite3": "^5.1.0",
@@ -36,5 +41,54 @@
     "react-to-print": "^3.0.6",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
+  },
+  "build": {
+    "appId": "kg.gov.rtsop",
+    "productName": "RTS-OP",
+    "directories": {
+      "output": "release"
+    },
+    "asar": true,
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/sqlite3/**/*"
+    ],
+    "extraMetadata": {
+      "main": "dist/main/main.js"
+    },
+    "npmRebuild": true,
+    "buildDependenciesFromSource": false,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

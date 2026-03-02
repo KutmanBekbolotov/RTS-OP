@@ -6,9 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
+const electron_1 = require("electron");
+const path_1 = __importDefault(require("path"));
 const openDatabase = async () => {
+    const dbPath = path_1.default.join(electron_1.app.getPath('userData'), 'registration.db');
     return (0, sqlite_1.open)({
-        filename: 'registration.db',
+        filename: dbPath,
         driver: sqlite3_1.default.Database,
     });
 };

@@ -44,8 +44,7 @@ const createWindow = async () => {
   } else {
     const rendererCandidates = [
       path.join(__dirname, "../renderer/index.html"),
-      path.join(__dirname, "../../src/renderer/dist/index.html"),
-      path.join(process.cwd(), "src/renderer/dist/index.html"),
+      path.join(process.cwd(), "dist/renderer/index.html"),
     ];
     const rendererEntry = rendererCandidates.find((candidate) => fs.existsSync(candidate));
     if (!rendererEntry) {
