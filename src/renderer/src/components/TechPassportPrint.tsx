@@ -112,7 +112,7 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
 
             <div className="owner">
               <h6>СОБСТВЕННИК</h6>
-              <span>{formatPrintValue(searchResult.owner)}</span>
+              <span>{formatPrintValue(searchResult.organizationName) || formatPrintValue(searchResult.owner)}</span>
             </div>
           </div>
           <div className="main-info-right-middle">
