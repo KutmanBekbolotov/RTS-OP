@@ -4,7 +4,7 @@
   "main": "dist/main/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npm run build:ts && npm run build:renderer && env -u ELECTRON_RUN_AS_NODE electron .",
+    "start": "npm run build:ts && npm run build:renderer && node scripts/run-electron.js",
     "build": "npm run build:ts && npm run build:renderer",
     "package": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder --linux AppImage deb",
@@ -14,9 +14,9 @@
     "build:ts": "rimraf dist && tsc",
     "build:renderer": "npm --prefix src/renderer run build",
     "dev:renderer": "npm --prefix src/renderer run dev",
-    "dev:electron": "npm run build:ts && env -u ELECTRON_RUN_AS_NODE ELECTRON_RENDERER_URL=http://localhost:5173 electron .",
+    "dev:electron": "npm run build:ts && node scripts/run-electron.js --renderer-url=http://localhost:5173",
     "dev": "tsc -w",
-    "electron-dev": "env -u ELECTRON_RUN_AS_NODE electron ."
+    "electron-dev": "node scripts/run-electron.js"
   },
   "keywords": [],
   "author": "",

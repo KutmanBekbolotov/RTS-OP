@@ -57,7 +57,7 @@ const defaultSpravka: SpravkaProps = {
   registrationType: "",
   registrationDate: "",
   receiveDate: "",
-  territorialDepartment: "",
+  territorialDepartment: "ГЦ РТСВС",
   organizationName: "",
   subdivision: "",
   address: "",
@@ -88,7 +88,7 @@ const defaultTechPassport: TechPassportProps = {
   owner: "",
   personalNumber: "",
   ownerAddress: "",
-  issuingAuthority: "",
+  issuingAuthority: "ГЦ РТСВС",
   authorizedSignature: "",
 };
 
@@ -140,6 +140,9 @@ const RegistrationForm = () => {
   const handleChange = (field: string, value: string) => {
     if (field in spravkaData) {
       setSpravkaData((prev) => ({ ...prev, [field]: value }));
+      if (field === "address") {
+        setTechPassportData((prev) => ({ ...prev, ownerAddress: value }));
+      }
     } else if (field in techPassportData) {
       setTechPassportData((prev) => ({ ...prev, [field]: value }));
     }

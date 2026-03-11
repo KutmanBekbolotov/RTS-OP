@@ -206,7 +206,18 @@ const Search = () => {
   };
 
   const handleEditChange = (field: EditableFieldKey, value: string) => {
-    setEditData((prev) => (prev ? { ...prev, [field]: value } : prev));
+    setEditData((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const updated: SearchResult = { ...prev, [field]: value };
+      if (field === "address") {
+        updated.ownerAddress = value;
+      }
+
+      return updated;
+    });
   };
 
   const handleSaveEdit = async () => {
