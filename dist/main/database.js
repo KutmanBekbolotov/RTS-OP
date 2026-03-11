@@ -3,17 +3,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
+exports.deleteSubdivision = exports.addSubdivision = exports.getAuthorityDirectory = exports.deleteAuthority = exports.addAuthority = exports.getAuthorities = exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
 const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 const openDatabase = async () => {
     const dbPath = path_1.default.join(electron_1.app.getPath('userData'), 'registration.db');
-    return (0, sqlite_1.open)({
+    const db = await (0, sqlite_1.open)({
         filename: dbPath,
         driver: sqlite3_1.default.Database,
     });
+    await db.exec("PRAGMA foreign_keys = ON");
+    return db;
 };
 exports.openDatabase = openDatabase;
 const createTable = async () => {
@@ -55,6 +57,21 @@ const createTable = async () => {
         ownerAddress TEXT,
         issuingAuthority TEXT,
         authorizedSignature TEXT
+      )
+    `);
+        await db.exec(`
+      CREATE TABLE IF NOT EXISTS authorities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE COLLATE NOCASE
+      )
+    `);
+        await db.exec(`
+      CREATE TABLE IF NOT EXISTS authority_subdivisions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        authorityId INTEGER NOT NULL,
+        name TEXT NOT NULL COLLATE NOCASE,
+        UNIQUE(authorityId, name),
+        FOREIGN KEY(authorityId) REFERENCES authorities(id) ON DELETE CASCADE
       )
     `);
         console.log("Таблица успешно создана");
@@ -125,3 +142,89 @@ const insertRegistrationData = async (formData) => {
     }
 };
 exports.insertRegistrationData = insertRegistrationData;
+const getAuthorities = async () => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const rows = await db.all(`SELECT id, name FROM authorities ORDER BY name COLLATE NOCASE`);
+        return rows;
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.getAuthorities = getAuthorities;
+const addAuthority = async (name) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const result = await db.run(`INSERT INTO authorities (name) VALUES (?)`, [name]);
+        const row = await db.get(`SELECT id, name FROM authorities WHERE id = ?`, [result.lastID]);
+        if (!row) {
+            throw new Error("Не удалось получить добавленный госорган");
+        }
+        return row;
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.addAuthority = addAuthority;
+const deleteAuthority = async (id) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        await db.run(`DELETE FROM authorities WHERE id = ?`, [id]);
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.deleteAuthority = deleteAuthority;
+const getAuthorityDirectory = async () => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const authorities = await db.all(`SELECT id, name FROM authorities ORDER BY name COLLATE NOCASE`);
+        const subdivisions = await db.all(`SELECT id, authorityId, name
+       FROM authority_subdivisions
+       ORDER BY name COLLATE NOCASE`);
+        const subdivisionsByAuthority = new Map();
+        for (const subdivision of subdivisions) {
+            const bucket = subdivisionsByAuthority.get(subdivision.authorityId) ?? [];
+            bucket.push(subdivision);
+            subdivisionsByAuthority.set(subdivision.authorityId, bucket);
+        }
+        return authorities.map((authority) => ({
+            ...authority,
+            subdivisions: subdivisionsByAuthority.get(authority.id) ?? [],
+        }));
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.getAuthorityDirectory = getAuthorityDirectory;
+const addSubdivision = async (authorityId, name) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const result = await db.run(`INSERT INTO authority_subdivisions (authorityId, name) VALUES (?, ?)`, [authorityId, name]);
+        const row = await db.get(`SELECT id, authorityId, name
+       FROM authority_subdivisions
+       WHERE id = ?`, [result.lastID]);
+        if (!row) {
+            throw new Error("Не удалось получить добавленное подразделение");
+        }
+        return row;
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.addSubdivision = addSubdivision;
+const deleteSubdivision = async (id) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        await db.run(`DELETE FROM authority_subdivisions WHERE id = ?`, [id]);
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.deleteSubdivision = deleteSubdivision;

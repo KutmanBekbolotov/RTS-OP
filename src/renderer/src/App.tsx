@@ -3,6 +3,7 @@ import Registration from "./pages/registration";
 import Home from "./pages/homepage";
 import Search from "./pages/search";
 import Login from "./pages/loginpage";
+import Directory from "./pages/directory";
 import { useState, useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -24,7 +25,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/registration" element={<Registration />} />
           <Route path="/search" element={<Search />} />
-          <Route path="/directory" element={<div>Справочник</div>} />
+          <Route path="/directory" element={<Directory />} />
         </Route>
       </Routes>
     </Router>

@@ -22,6 +22,18 @@ const electronAPI = {
 
   printGeneratedPDF: (pdfPath: string) => ipcRenderer.invoke("print-generated-pdf", pdfPath),
 
+  getAuthorities: () => ipcRenderer.invoke("get-authorities"),
+
+  getAuthorityDirectory: () => ipcRenderer.invoke("get-authority-directory"),
+
+  addAuthority: (name: string) => ipcRenderer.invoke("add-authority", name),
+
+  addSubdivision: (params: { authorityId: number; name: string }) => ipcRenderer.invoke("add-subdivision", params),
+
+  deleteAuthority: (id: number) => ipcRenderer.invoke("delete-authority", id),
+
+  deleteSubdivision: (id: number) => ipcRenderer.invoke("delete-subdivision", id),
+
 };
 
 contextBridge.exposeInMainWorld("electron", electronAPI);

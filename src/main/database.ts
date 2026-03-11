@@ -3,12 +3,29 @@ import { open } from 'sqlite';
 import { app } from 'electron';
 import path from 'path';
 
+export interface Authority {
+  id: number;
+  name: string;
+}
+
+export interface Subdivision {
+  id: number;
+  authorityId: number;
+  name: string;
+}
+
+export interface AuthorityDirectoryItem extends Authority {
+  subdivisions: Subdivision[];
+}
+
 export const openDatabase = async () => {
   const dbPath = path.join(app.getPath('userData'), 'registration.db');
-  return open({
+  const db = await open({
     filename: dbPath,
     driver: sqlite3.Database,
   });
+  await db.exec("PRAGMA foreign_keys = ON");
+  return db;
 };
 
 export const createTable = async () => {
@@ -52,6 +69,24 @@ export const createTable = async () => {
         authorizedSignature TEXT
       )
     `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS authorities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE COLLATE NOCASE
+      )
+    `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS authority_subdivisions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        authorityId INTEGER NOT NULL,
+        name TEXT NOT NULL COLLATE NOCASE,
+        UNIQUE(authorityId, name),
+        FOREIGN KEY(authorityId) REFERENCES authorities(id) ON DELETE CASCADE
+      )
+    `);
+
     console.log("Таблица успешно создана");
   } catch (error) {
     console.error("Ошибка при создании таблицы:", error);
@@ -112,6 +147,112 @@ export const insertRegistrationData = async (formData: any) => {
       formData.authorizedSignature,
     ]);
     return result;
+  } finally {
+    await db.close();
+  }
+};
+
+export const getAuthorities = async (): Promise<Authority[]> => {
+  const db = await openDatabase();
+  try {
+    const rows = await db.all<Authority[]>(
+      `SELECT id, name FROM authorities ORDER BY name COLLATE NOCASE`,
+    );
+    return rows;
+  } finally {
+    await db.close();
+  }
+};
+
+export const addAuthority = async (name: string): Promise<Authority> => {
+  const db = await openDatabase();
+  try {
+    const result = await db.run(
+      `INSERT INTO authorities (name) VALUES (?)`,
+      [name],
+    );
+
+    const row = await db.get<Authority>(
+      `SELECT id, name FROM authorities WHERE id = ?`,
+      [result.lastID],
+    );
+
+    if (!row) {
+      throw new Error("Не удалось получить добавленный госорган");
+    }
+
+    return row;
+  } finally {
+    await db.close();
+  }
+};
+
+export const deleteAuthority = async (id: number): Promise<void> => {
+  const db = await openDatabase();
+  try {
+    await db.run(`DELETE FROM authorities WHERE id = ?`, [id]);
+  } finally {
+    await db.close();
+  }
+};
+
+export const getAuthorityDirectory = async (): Promise<AuthorityDirectoryItem[]> => {
+  const db = await openDatabase();
+  try {
+    const authorities = await db.all<Authority[]>(
+      `SELECT id, name FROM authorities ORDER BY name COLLATE NOCASE`,
+    );
+    const subdivisions = await db.all<Subdivision[]>(
+      `SELECT id, authorityId, name
+       FROM authority_subdivisions
+       ORDER BY name COLLATE NOCASE`,
+    );
+
+    const subdivisionsByAuthority = new Map<number, Subdivision[]>();
+    for (const subdivision of subdivisions) {
+      const bucket = subdivisionsByAuthority.get(subdivision.authorityId) ?? [];
+      bucket.push(subdivision);
+      subdivisionsByAuthority.set(subdivision.authorityId, bucket);
+    }
+
+    return authorities.map((authority) => ({
+      ...authority,
+      subdivisions: subdivisionsByAuthority.get(authority.id) ?? [],
+    }));
+  } finally {
+    await db.close();
+  }
+};
+
+export const addSubdivision = async (authorityId: number, name: string): Promise<Subdivision> => {
+  const db = await openDatabase();
+  try {
+    const result = await db.run(
+      `INSERT INTO authority_subdivisions (authorityId, name) VALUES (?, ?)`,
+      [authorityId, name],
+    );
+
+    const row = await db.get<Subdivision>(
+      `SELECT id, authorityId, name
+       FROM authority_subdivisions
+       WHERE id = ?`,
+      [result.lastID],
+    );
+
+    if (!row) {
+      throw new Error("Не удалось получить добавленное подразделение");
+    }
+
+    return row;
+  } finally {
+    await db.close();
+  }
+};
+
+export const deleteSubdivision = async (id: number): Promise<void> => {
+  const db = await openDatabase();
+  try {
+    await db.run(`DELETE FROM authority_subdivisions WHERE id = ?`, [id]);
   } finally {
     await db.close();
   }

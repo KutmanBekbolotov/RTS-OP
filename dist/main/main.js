@@ -179,6 +179,44 @@ electron_1.ipcMain.handle("insert-registration-data", async (_event, formData) =
         throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");
     }
 });
+electron_1.ipcMain.handle("get-authorities", async () => {
+    return (0, database_1.getAuthorities)();
+});
+electron_1.ipcMain.handle("get-authority-directory", async () => {
+    return (0, database_1.getAuthorityDirectory)();
+});
+electron_1.ipcMain.handle("add-authority", async (_event, name) => {
+    const normalizedName = typeof name === "string" ? name.trim() : "";
+    if (!normalizedName) {
+        throw new Error("Название госоргана не может быть пустым");
+    }
+    return (0, database_1.addAuthority)(normalizedName);
+});
+electron_1.ipcMain.handle("add-subdivision", async (_event, params) => {
+    const authorityId = params?.authorityId;
+    const normalizedName = typeof params?.name === "string" ? params.name.trim() : "";
+    if (!Number.isInteger(authorityId) || authorityId <= 0) {
+        throw new Error("Некорректный идентификатор госоргана");
+    }
+    if (!normalizedName) {
+        throw new Error("Название подразделения не может быть пустым");
+    }
+    return (0, database_1.addSubdivision)(authorityId, normalizedName);
+});
+electron_1.ipcMain.handle("delete-authority", async (_event, id) => {
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Некорректный идентификатор госоргана");
+    }
+    await (0, database_1.deleteAuthority)(id);
+    return { success: true };
+});
+electron_1.ipcMain.handle("delete-subdivision", async (_event, id) => {
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Некорректный идентификатор подразделения");
+    }
+    await (0, database_1.deleteSubdivision)(id);
+    return { success: true };
+});
 electron_1.ipcMain.handle("search-vehicle", async (_event, searchParams) => {
     const { type, query } = searchParams;
     if (!ALLOWED_SEARCH_FIELDS.has(type)) {

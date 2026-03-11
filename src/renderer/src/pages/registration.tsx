@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { TextField, Button, Box, Typography, Snackbar, Alert } from "@mui/material";
+import { useEffect, useState } from "react";
+import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 interface SpravkaProps {
@@ -41,6 +41,18 @@ interface TechPassportProps {
   authorizedSignature: string;
 }
 
+interface Subdivision {
+  id: number;
+  authorityId: number;
+  name: string;
+}
+
+interface AuthorityDirectoryItem {
+  id: number;
+  name: string;
+  subdivisions: Subdivision[];
+}
+
 const defaultSpravka: SpravkaProps = {
   registrationType: "",
   registrationDate: "",
@@ -60,21 +72,21 @@ const defaultSpravka: SpravkaProps = {
 
 const defaultTechPassport: TechPassportProps = {
   model: "ОП",
-  yearOfManufacture: "—————",
-  color: "—————",
-  vin: "—————",
-  chassisNumber: "—————",
-  bodyType: "—————",
-  seatCount: "—————",
-  fuelType: "—————",
-  engineCapacity: "—————",
-  enginePower: "—————",
-  unladenMass: "—————",
-  maxPermissibleMass: "—————",
-  registrationNumber: "—————",
-  vid: "—————",
-  owner: "—————",
-  personalNumber: "-",
+  yearOfManufacture: "",
+  color: "",
+  vin: "",
+  chassisNumber: "",
+  bodyType: "",
+  seatCount: "",
+  fuelType: "",
+  engineCapacity: "",
+  enginePower: "",
+  unladenMass: "",
+  maxPermissibleMass: "",
+  registrationNumber: "",
+  vid: "",
+  owner: "",
+  personalNumber: "",
   ownerAddress: "",
   issuingAuthority: "",
   authorizedSignature: "",
@@ -83,6 +95,7 @@ const defaultTechPassport: TechPassportProps = {
 const RegistrationForm = () => {
   const [spravkaData, setSpravkaData] = useState<SpravkaProps>(defaultSpravka);
   const [techPassportData, setTechPassportData] = useState<TechPassportProps>(defaultTechPassport);
+  const [authorityDirectory, setAuthorityDirectory] = useState<AuthorityDirectoryItem[]>([]);
   const [notification, setNotification] = useState<{
     open: boolean;
     message: string;
@@ -93,6 +106,36 @@ const RegistrationForm = () => {
     severity: "success",
   });
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadAuthorityDirectory = async () => {
+      try {
+        const result = await window.electron.getAuthorityDirectory();
+        setAuthorityDirectory(result);
+      } catch (error) {
+        console.error("Ошибка загрузки справочника госорганов:", error);
+      }
+    };
+
+    void loadAuthorityDirectory();
+  }, []);
+
+  const normalizeName = (value: string) => value.trim().toLowerCase();
+
+  const authorityNames = authorityDirectory.map((item) => item.name);
+
+  const selectedOrganization = authorityDirectory.find(
+    (item) => normalizeName(item.name) === normalizeName(spravkaData.organizationName),
+  );
+
+  const subdivisionOptions = selectedOrganization
+    ? selectedOrganization.subdivisions.map((item) => item.name)
+    : [];
+
+  const getFieldValue = (field: string): string =>
+    field in spravkaData
+      ? spravkaData[field as keyof SpravkaProps]
+      : techPassportData[field as keyof TechPassportProps];
 
   const handleChange = (field: string, value: string) => {
     if (field in spravkaData) {
@@ -136,10 +179,52 @@ const RegistrationForm = () => {
   const renderTextField = (label: string, field: string) => (
     <TextField
       label={label}
-      value={field in spravkaData ? spravkaData[field as keyof SpravkaProps] : techPassportData[field as keyof TechPassportProps]}
+      value={getFieldValue(field)}
       onChange={(e) => handleChange(field, e.target.value)}
       fullWidth
       sx={{ mb: 2 }}
+    />
+  );
+
+  const renderAuthorityField = (label: string, field: string) => (
+    <Autocomplete
+      freeSolo
+      options={authorityNames}
+      value={getFieldValue(field)}
+      onChange={(_, newValue) => {
+        handleChange(field, typeof newValue === "string" ? newValue : "");
+      }}
+      onInputChange={(_, newInputValue) => {
+        handleChange(field, newInputValue);
+      }}
+      renderInput={(params) => <TextField {...params} label={label} fullWidth sx={{ mb: 2 }} />}
+    />
+  );
+
+  const renderSubdivisionField = () => (
+    <Autocomplete
+      freeSolo
+      options={subdivisionOptions}
+      value={spravkaData.subdivision}
+      onChange={(_, newValue) => {
+        handleChange("subdivision", typeof newValue === "string" ? newValue : "");
+      }}
+      onInputChange={(_, newInputValue) => {
+        handleChange("subdivision", newInputValue);
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Подразделение"
+          fullWidth
+          sx={{ mb: 2 }}
+          helperText={
+            selectedOrganization
+              ? "Можно выбрать из списка или ввести вручную"
+              : "Ручной ввод или сначала выберите орган для списка подразделений"
+          }
+        />
+      )}
     />
   );
 
@@ -164,8 +249,8 @@ const RegistrationForm = () => {
       {renderDateField("Дата регистрации", "registrationDate")}
       {renderDateField("Дата получения", "receiveDate")}
       {renderTextField("Территориальный отдел", "territorialDepartment")}
-      {renderTextField("Наименование органа", "organizationName")}
-      {renderTextField("Подразделение", "subdivision")}
+      {renderAuthorityField("Наименование органа", "organizationName")}
+      {renderSubdivisionField()}
       {renderTextField("Адрес органа", "address")}
       {renderTextField("Гос номер", "stateNumber")}
       {renderTextField("Номер техпаспорта", "techPassportNumber")}
@@ -193,7 +278,7 @@ const RegistrationForm = () => {
       {renderTextField("Собственник", "owner")}
       {renderTextField("ПИН / ИСН", "personalNumber")}
       {renderTextField("Адрес собственника", "ownerAddress")}
-      {renderTextField("Орган выдачи", "issuingAuthority")}
+      {renderAuthorityField("Орган выдачи", "issuingAuthority")}
       {renderTextField("Подпись уполномоченного", "authorizedSignature")}
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>

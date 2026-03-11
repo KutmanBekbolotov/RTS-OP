@@ -2,7 +2,17 @@ import { app, BrowserWindow, ipcMain, shell } from "electron";
 import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
-import { createTable, insertRegistrationData, openDatabase } from "./database";
+import {
+  addAuthority,
+  addSubdivision,
+  createTable,
+  deleteAuthority,
+  deleteSubdivision,
+  getAuthorityDirectory,
+  getAuthorities,
+  insertRegistrationData,
+  openDatabase,
+} from "./database";
 
 type PrintPreviewLib = {
   startPrint: (options: { htmlString: string }, browserWindow?: unknown) => Promise<void>;
@@ -212,6 +222,56 @@ ipcMain.handle("insert-registration-data", async (_event, formData) => {
     console.error("Ошибка при сохранении:", error);
     throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");
   }
+});
+
+ipcMain.handle("get-authorities", async () => {
+  return getAuthorities();
+});
+
+ipcMain.handle("get-authority-directory", async () => {
+  return getAuthorityDirectory();
+});
+
+ipcMain.handle("add-authority", async (_event, name: string) => {
+  const normalizedName = typeof name === "string" ? name.trim() : "";
+  if (!normalizedName) {
+    throw new Error("Название госоргана не может быть пустым");
+  }
+
+  return addAuthority(normalizedName);
+});
+
+ipcMain.handle("add-subdivision", async (_event, params: { authorityId: number; name: string }) => {
+  const authorityId = params?.authorityId;
+  const normalizedName = typeof params?.name === "string" ? params.name.trim() : "";
+
+  if (!Number.isInteger(authorityId) || authorityId <= 0) {
+    throw new Error("Некорректный идентификатор госоргана");
+  }
+
+  if (!normalizedName) {
+    throw new Error("Название подразделения не может быть пустым");
+  }
+
+  return addSubdivision(authorityId, normalizedName);
+});
+
+ipcMain.handle("delete-authority", async (_event, id: number) => {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Некорректный идентификатор госоргана");
+  }
+
+  await deleteAuthority(id);
+  return { success: true };
+});
+
+ipcMain.handle("delete-subdivision", async (_event, id: number) => {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Некорректный идентификатор подразделения");
+  }
+
+  await deleteSubdivision(id);
+  return { success: true };
 });
 
 ipcMain.handle("search-vehicle", async (_event, searchParams: { type: string; query: string }) => {
