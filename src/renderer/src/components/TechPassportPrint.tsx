@@ -33,6 +33,29 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
     return registrationNumber || stateNumber;
   };
 
+  const getIssuingAuthorityLines = (): string[] => {
+    const authority = formatPrintValue(searchResult.issuingAuthority);
+    const subdivision = formatPrintValue(searchResult.subdivision);
+
+    if (!authority && !subdivision) {
+      return [];
+    }
+
+    if (!authority) {
+      return [subdivision];
+    }
+
+    if (!subdivision) {
+      return [authority];
+    }
+
+    return authority.toLowerCase() === subdivision.toLowerCase()
+      ? [authority]
+      : [authority, subdivision];
+  };
+
+  const issuingAuthorityLines = getIssuingAuthorityLines();
+
   return (
     <div className="tech-passport-print">
       <div className="container">
@@ -102,7 +125,9 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
           <div className="main-info-right-top">
             <div className="registerNumber">
               <h6>РЕГИСТРАЦИОННЫЙ НОМЕР</h6>
-              <span>{formatRegistrationValue()}</span>
+              <span style={{ fontSize: "45px", fontWeight: 700, lineHeight: 1 }}>
+                {formatRegistrationValue()}
+              </span>
             </div>
 
             <div className="vid">
@@ -131,7 +156,16 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
           <div className="main-info-right-bottom">
             <div className="issuingAuthority">
               <h6>ОРГАН ВЫДАЧИ</h6>
-              <span>{formatPrintValue(searchResult.issuingAuthority)}</span>
+              <span>
+                {issuingAuthorityLines.length > 0
+                  ? issuingAuthorityLines.map((line, index) => (
+                    <React.Fragment key={`${line}-${index}`}>
+                      {line}
+                      {index < issuingAuthorityLines.length - 1 ? <br /> : null}
+                    </React.Fragment>
+                  ))
+                  : ""}
+              </span>
             </div>
 
             <div className="registerDate">
