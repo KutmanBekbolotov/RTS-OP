@@ -152,6 +152,92 @@ export const insertRegistrationData = async (formData: any) => {
   }
 };
 
+export const updateRegistrationData = async (formData: any) => {
+  const db = await openDatabase();
+  try {
+    const result = await db.run(`
+      UPDATE registrations SET
+        registrationType = ?,
+        registrationDate = ?,
+        receiveDate = ?,
+        territorialDepartment = ?,
+        organizationName = ?,
+        subdivision = ?,
+        address = ?,
+        stateNumber = ?,
+        techPassportNumber = ?,
+        expirationDate = ?,
+        submissionDate = ?,
+        stateNumberSubmissionDate = ?,
+        fullName = ?,
+        note = ?,
+        model = ?,
+        yearOfManufacture = ?,
+        color = ?,
+        vin = ?,
+        chassisNumber = ?,
+        bodyType = ?,
+        seatCount = ?,
+        fuelType = ?,
+        engineCapacity = ?,
+        enginePower = ?,
+        unladenMass = ?,
+        maxPermissibleMass = ?,
+        registrationNumber = ?,
+        vid = ?,
+        owner = ?,
+        personalNumber = ?,
+        ownerAddress = ?,
+        issuingAuthority = ?,
+        authorizedSignature = ?
+      WHERE id = ?
+    `, [
+      formData.registrationType,
+      formData.registrationDate,
+      formData.receiveDate,
+      formData.territorialDepartment,
+      formData.organizationName,
+      formData.subdivision,
+      formData.address,
+      formData.stateNumber,
+      formData.techPassportNumber,
+      formData.expirationDate,
+      formData.submissionDate,
+      formData.stateNumberSubmissionDate,
+      formData.fullName,
+      formData.note,
+      formData.model,
+      formData.yearOfManufacture,
+      formData.color,
+      formData.vin,
+      formData.chassisNumber,
+      formData.bodyType,
+      formData.seatCount,
+      formData.fuelType,
+      formData.engineCapacity,
+      formData.enginePower,
+      formData.unladenMass,
+      formData.maxPermissibleMass,
+      formData.registrationNumber,
+      formData.vid,
+      formData.owner,
+      formData.personalNumber,
+      formData.ownerAddress,
+      formData.issuingAuthority,
+      formData.authorizedSignature,
+      formData.id,
+    ]);
+
+    if (!result.changes) {
+      throw new Error("Запись не найдена");
+    }
+
+    return db.get(`SELECT * FROM registrations WHERE id = ?`, [formData.id]);
+  } finally {
+    await db.close();
+  }
+};
+
 export const getAuthorities = async (): Promise<Authority[]> => {
   const db = await openDatabase();
   try {

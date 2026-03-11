@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  Alert,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   TextField,
   Button,
   Box,
@@ -13,6 +18,7 @@ import TechPassportPrint from "@/components/TechPassportPrint";
 import CertificateContent from "@/components/certificateContent";
 
 export interface SearchResult {
+  id: number | null;
   registrationType: string | null;
   registrationDate: string | null;
   receiveDate: string | null;
@@ -49,11 +55,63 @@ export interface SearchResult {
   maxPermissibleMass: string | null;
 }
 
+type EditableFieldKey = Exclude<keyof SearchResult, "id" | "district">;
+
+const SPRAVKA_FIELDS: Array<{ key: EditableFieldKey; label: string; type?: "date" }> = [
+  { key: "registrationType", label: "Тип регистрации" },
+  { key: "registrationDate", label: "Дата регистрации", type: "date" },
+  { key: "receiveDate", label: "Дата получения", type: "date" },
+  { key: "territorialDepartment", label: "Территориальный отдел" },
+  { key: "organizationName", label: "Наименование органа" },
+  { key: "subdivision", label: "Подразделение" },
+  { key: "address", label: "Адрес органа" },
+  { key: "stateNumber", label: "Гос номер" },
+  { key: "techPassportNumber", label: "Номер техпаспорта" },
+  { key: "expirationDate", label: "Срок окончания", type: "date" },
+  { key: "submissionDate", label: "Дата сдачи техпаспорта", type: "date" },
+  { key: "stateNumberSubmissionDate", label: "Дата сдачи гос номера", type: "date" },
+  { key: "fullName", label: "ФИО" },
+  { key: "note", label: "Примечание" },
+];
+
+const TECH_PASSPORT_FIELDS: Array<{ key: EditableFieldKey; label: string; type?: "date" }> = [
+  { key: "model", label: "Модель" },
+  { key: "yearOfManufacture", label: "Год выпуска" },
+  { key: "color", label: "Цвет" },
+  { key: "vin", label: "VIN" },
+  { key: "chassisNumber", label: "№ кузова / шасси" },
+  { key: "bodyType", label: "Тип кузова" },
+  { key: "seatCount", label: "Кол-во мест" },
+  { key: "fuelType", label: "Тип топлива" },
+  { key: "engineCapacity", label: "Объём двигателя" },
+  { key: "enginePower", label: "Мощность двигателя" },
+  { key: "unladenMass", label: "Масса без нагрузки" },
+  { key: "maxPermissibleMass", label: "Макс. масса" },
+  { key: "registrationNumber", label: "Рег. номер" },
+  { key: "vid", label: "VID" },
+  { key: "owner", label: "Собственник" },
+  { key: "personalNumber", label: "ПИН / ИСН" },
+  { key: "ownerAddress", label: "Адрес собственника" },
+  { key: "issuingAuthority", label: "Орган выдачи" },
+  { key: "authorizedSignature", label: "Подпись уполномоченного" },
+];
+
+const ALL_EDITABLE_FIELDS = [...SPRAVKA_FIELDS, ...TECH_PASSPORT_FIELDS];
+
 const Search = () => {
   const [searchType, setSearchType] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editData, setEditData] = useState<SearchResult | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const toNullable = (value: string | null) => {
+    const normalized = (value ?? "").trim();
+    return normalized === "" ? null : normalized;
+  };
 
   const handleSearch = async () => {
     setError(null);
@@ -75,6 +133,9 @@ const Search = () => {
         setSearchResult(null);
       } else {
         setSearchResult(result);
+        setEditOpen(false);
+        setEditData(null);
+        setEditError(null);
       }
     } catch (searchError) {
       console.error("Ошибка поиска:", searchError);
@@ -134,6 +195,46 @@ const Search = () => {
     }
   };
 
+  const handleOpenEdit = () => {
+    if (!searchResult) {
+      return;
+    }
+
+    setEditData({ ...searchResult });
+    setEditError(null);
+    setEditOpen(true);
+  };
+
+  const handleEditChange = (field: EditableFieldKey, value: string) => {
+    setEditData((prev) => (prev ? { ...prev, [field]: value } : prev));
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editData || !editData.id) {
+      setEditError("Не удалось определить запись для обновления.");
+      return;
+    }
+
+    setIsSaving(true);
+    setEditError(null);
+    try {
+      const payload: Record<string, string | number | null> = { id: editData.id };
+      for (const field of ALL_EDITABLE_FIELDS) {
+        payload[field.key] = toNullable(editData[field.key]);
+      }
+
+      const response = await window.electron.updateRegistration(payload);
+      setSearchResult(response.data);
+      setEditOpen(false);
+      setEditData(null);
+    } catch (updateError) {
+      console.error("Ошибка обновления:", updateError);
+      setEditError("Не удалось сохранить изменения. Проверьте уникальность гос номера и техпаспорта.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <Box sx={{ padding: "20px", maxWidth: "100%", margin: "0 auto" }}>
       <Box
@@ -186,6 +287,9 @@ const Search = () => {
     </Button>
     <Button variant="contained" onClick={() => handlePrint("print-passport")}>
       Печать техпаспорта
+    </Button>
+    <Button variant="outlined" onClick={handleOpenEdit}>
+      Изменить данные
     </Button>
   </Box>
     
@@ -330,6 +434,87 @@ const Search = () => {
 </div>
   </>
 )}
+
+      <Dialog
+        open={editOpen}
+        onClose={() => {
+          if (!isSaving) {
+            setEditOpen(false);
+          }
+        }}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>Редактирование данных</DialogTitle>
+        <DialogContent dividers>
+          {editError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {editError}
+            </Alert>
+          )}
+
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            Данные справки
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 2,
+              mb: 3,
+            }}
+          >
+            {SPRAVKA_FIELDS.map((field) => (
+              <TextField
+                key={field.key}
+                label={field.label}
+                type={field.type === "date" ? "date" : "text"}
+                value={editData ? (editData[field.key] ?? "") : ""}
+                onChange={(e) => handleEditChange(field.key, e.target.value)}
+                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                fullWidth
+              />
+            ))}
+          </Box>
+
+          <Typography variant="h6" sx={{ mb: 1 }}>
+            Данные техпаспорта
+          </Typography>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+              gap: 2,
+            }}
+          >
+            {TECH_PASSPORT_FIELDS.map((field) => (
+              <TextField
+                key={field.key}
+                label={field.label}
+                type={field.type === "date" ? "date" : "text"}
+                value={editData ? (editData[field.key] ?? "") : ""}
+                onChange={(e) => handleEditChange(field.key, e.target.value)}
+                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                fullWidth
+              />
+            ))}
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              if (!isSaving) {
+                setEditOpen(false);
+              }
+            }}
+          >
+            Отмена
+          </Button>
+          <Button variant="contained" onClick={handleSaveEdit} disabled={isSaving}>
+            {isSaving ? "Сохранение..." : "Сохранить"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

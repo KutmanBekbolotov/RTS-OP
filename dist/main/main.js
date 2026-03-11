@@ -179,6 +179,19 @@ electron_1.ipcMain.handle("insert-registration-data", async (_event, formData) =
         throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");
     }
 });
+electron_1.ipcMain.handle("update-registration-data", async (_event, formData) => {
+    try {
+        if (!formData || !Number.isInteger(formData.id)) {
+            throw new Error("Некорректные данные для обновления");
+        }
+        const updated = await (0, database_1.updateRegistrationData)(formData);
+        return { success: true, data: updated };
+    }
+    catch (error) {
+        console.error("Ошибка при обновлении:", error);
+        throw new Error(error instanceof Error ? error.message : "Ошибка при обновлении данных");
+    }
+});
 electron_1.ipcMain.handle("get-authorities", async () => {
     return (0, database_1.getAuthorities)();
 });

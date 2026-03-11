@@ -4,6 +4,7 @@ const electron_1 = require("electron");
 console.log("✅ preload.js загружен");
 const electronAPI = {
     addRegistration: (formData) => electron_1.ipcRenderer.invoke("insert-registration-data", formData),
+    updateRegistration: (formData) => electron_1.ipcRenderer.invoke("update-registration-data", formData),
     searchVehicle: (searchParams) => electron_1.ipcRenderer.invoke("search-vehicle", searchParams),
     checkPassword: (password) => electron_1.ipcRenderer.invoke("check-password", password),
     openPrintPreview: (html) => electron_1.ipcRenderer.invoke("open-print-preview", html),

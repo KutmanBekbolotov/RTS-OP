@@ -15,6 +15,7 @@ interface AuthorityDirectoryItem extends Authority {
 
 interface IElectronAPI {
   addRegistration: (formData: unknown) => Promise<{ success: boolean; message: string }>;
+  updateRegistration: (formData: unknown) => Promise<{ success: boolean; data: any }>;
   searchVehicle: (searchParams: { type: string; query: string }) => Promise<any | null>;
   checkPassword: (password: string) => Promise<boolean>;
   openPrintPreview: (html: string) => Promise<void>;

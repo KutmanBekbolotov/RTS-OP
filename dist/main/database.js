@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSubdivision = exports.addSubdivision = exports.getAuthorityDirectory = exports.deleteAuthority = exports.addAuthority = exports.getAuthorities = exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
+exports.deleteSubdivision = exports.addSubdivision = exports.getAuthorityDirectory = exports.deleteAuthority = exports.addAuthority = exports.getAuthorities = exports.updateRegistrationData = exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
 const electron_1 = require("electron");
@@ -142,6 +142,91 @@ const insertRegistrationData = async (formData) => {
     }
 };
 exports.insertRegistrationData = insertRegistrationData;
+const updateRegistrationData = async (formData) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const result = await db.run(`
+      UPDATE registrations SET
+        registrationType = ?,
+        registrationDate = ?,
+        receiveDate = ?,
+        territorialDepartment = ?,
+        organizationName = ?,
+        subdivision = ?,
+        address = ?,
+        stateNumber = ?,
+        techPassportNumber = ?,
+        expirationDate = ?,
+        submissionDate = ?,
+        stateNumberSubmissionDate = ?,
+        fullName = ?,
+        note = ?,
+        model = ?,
+        yearOfManufacture = ?,
+        color = ?,
+        vin = ?,
+        chassisNumber = ?,
+        bodyType = ?,
+        seatCount = ?,
+        fuelType = ?,
+        engineCapacity = ?,
+        enginePower = ?,
+        unladenMass = ?,
+        maxPermissibleMass = ?,
+        registrationNumber = ?,
+        vid = ?,
+        owner = ?,
+        personalNumber = ?,
+        ownerAddress = ?,
+        issuingAuthority = ?,
+        authorizedSignature = ?
+      WHERE id = ?
+    `, [
+            formData.registrationType,
+            formData.registrationDate,
+            formData.receiveDate,
+            formData.territorialDepartment,
+            formData.organizationName,
+            formData.subdivision,
+            formData.address,
+            formData.stateNumber,
+            formData.techPassportNumber,
+            formData.expirationDate,
+            formData.submissionDate,
+            formData.stateNumberSubmissionDate,
+            formData.fullName,
+            formData.note,
+            formData.model,
+            formData.yearOfManufacture,
+            formData.color,
+            formData.vin,
+            formData.chassisNumber,
+            formData.bodyType,
+            formData.seatCount,
+            formData.fuelType,
+            formData.engineCapacity,
+            formData.enginePower,
+            formData.unladenMass,
+            formData.maxPermissibleMass,
+            formData.registrationNumber,
+            formData.vid,
+            formData.owner,
+            formData.personalNumber,
+            formData.ownerAddress,
+            formData.issuingAuthority,
+            formData.authorizedSignature,
+            formData.id,
+        ]);
+        if (!result.changes) {
+            throw new Error("Запись не найдена");
+        }
+        return db.get(`SELECT * FROM registrations WHERE id = ?`, [formData.id]);
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.updateRegistrationData = updateRegistrationData;
 const getAuthorities = async () => {
     const db = await (0, exports.openDatabase)();
     try {

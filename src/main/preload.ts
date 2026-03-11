@@ -5,6 +5,9 @@ const electronAPI = {
   addRegistration: (formData: unknown) =>
     ipcRenderer.invoke("insert-registration-data", formData),
 
+  updateRegistration: (formData: unknown) =>
+    ipcRenderer.invoke("update-registration-data", formData),
+
   searchVehicle: (searchParams: { type: string; query: string }) =>
     ipcRenderer.invoke("search-vehicle", searchParams),
 

@@ -12,6 +12,7 @@ import {
   getAuthorities,
   insertRegistrationData,
   openDatabase,
+  updateRegistrationData,
 } from "./database";
 
 type PrintPreviewLib = {
@@ -221,6 +222,20 @@ ipcMain.handle("insert-registration-data", async (_event, formData) => {
   } catch (error) {
     console.error("Ошибка при сохранении:", error);
     throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");
+  }
+});
+
+ipcMain.handle("update-registration-data", async (_event, formData) => {
+  try {
+    if (!formData || !Number.isInteger(formData.id)) {
+      throw new Error("Некорректные данные для обновления");
+    }
+
+    const updated = await updateRegistrationData(formData);
+    return { success: true, data: updated };
+  } catch (error) {
+    console.error("Ошибка при обновлении:", error);
+    throw new Error(error instanceof Error ? error.message : "Ошибка при обновлении данных");
   }
 });
 
