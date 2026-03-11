@@ -265,21 +265,6 @@ const RegistrationForm = () => {
 
       {/* Tech Passport Fields */}
       {renderTextField("Модель", "model")}
-      {renderTextField("Год выпуска", "yearOfManufacture")}
-      {renderTextField("Цвет", "color")}
-      {renderTextField("VIN", "vin")}
-      {renderTextField("№ кузова / шасси", "chassisNumber")}
-      {renderTextField("Тип кузова", "bodyType")}
-      {renderTextField("Кол-во мест", "seatCount")}
-      {renderTextField("Тип топлива", "fuelType")}
-      {renderTextField("Объём двигателя", "engineCapacity")}
-      {renderTextField("Мощность двигателя", "enginePower")}
-      {renderTextField("Масса без нагрузки", "unladenMass")}
-      {renderTextField("Макс. масса", "maxPermissibleMass")}
-      {renderTextField("Рег. номер", "registrationNumber")}
-      {renderTextField("VID", "vid")}
-      {renderTextField("Собственник", "owner")}
-      {renderTextField("ПИН / ИСН", "personalNumber")}
       {renderTextField("Адрес собственника", "ownerAddress")}
       {renderAuthorityField("Орган выдачи", "issuingAuthority")}
       {renderTextField("Подпись уполномоченного", "authorizedSignature")}
