@@ -33,27 +33,38 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
     return registrationNumber || stateNumber;
   };
 
-  const getIssuingAuthorityLines = (): string[] => {
-    const authority = formatPrintValue(searchResult.issuingAuthority);
+  const getOwnerLines = (): string[] => {
     const subdivision = formatPrintValue(searchResult.subdivision);
+    const organization = formatPrintValue(searchResult.organizationName);
+    const owner = formatPrintValue(searchResult.owner);
+    const lines: string[] = [];
 
-    if (!authority && !subdivision) {
-      return [];
-    }
+    const appendUnique = (value: string) => {
+      if (!value) {
+        return;
+      }
 
-    if (!authority) {
-      return [subdivision];
-    }
+      const lowerValue = value.toLowerCase();
+      if (lines.some((line) => line.toLowerCase() === lowerValue)) {
+        return;
+      }
 
-    if (!subdivision) {
-      return [authority];
-    }
+      lines.push(value);
+    };
 
-    return authority.toLowerCase() === subdivision.toLowerCase()
-      ? [authority]
-      : [authority, subdivision];
+    appendUnique(subdivision);
+    appendUnique(organization);
+    appendUnique(owner);
+
+    return lines;
   };
 
+  const getIssuingAuthorityLines = (): string[] => {
+    const authority = formatPrintValue(searchResult.issuingAuthority);
+    return authority ? [authority] : [];
+  };
+
+  const ownerLines = getOwnerLines();
   const issuingAuthorityLines = getIssuingAuthorityLines();
 
   return (
@@ -125,7 +136,7 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
           <div className="main-info-right-top">
             <div className="registerNumber">
               <h6>РЕГИСТРАЦИОННЫЙ НОМЕР</h6>
-              <span style={{ fontSize: "18px", lineHeight: 1 }}>
+              <span style={{ fontSize: "36px", lineHeight: 1 }}>
                 {formatRegistrationValue()}
               </span>
             </div>
@@ -137,7 +148,16 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
 
             <div className="owner">
               <h6>СОБСТВЕННИК</h6>
-              <span>{formatPrintValue(searchResult.organizationName) || formatPrintValue(searchResult.owner)}</span>
+              <span>
+                {ownerLines.length > 0
+                  ? ownerLines.map((line, index) => (
+                    <React.Fragment key={`${line}-${index}`}>
+                      {line}
+                      {index < ownerLines.length - 1 ? <br /> : null}
+                    </React.Fragment>
+                  ))
+                  : ""}
+              </span>
             </div>
           </div>
           <div className="main-info-right-middle">

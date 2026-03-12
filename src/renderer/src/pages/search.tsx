@@ -379,7 +379,7 @@ const Search = () => {
       .main-info-left {
         width: 100%;
         padding-top: 15%;
-        font-size: 9px;
+        font-size: 18px;
         display: flex;
         flex-direction: column;
         gap: 15px;
@@ -389,7 +389,7 @@ const Search = () => {
       .main-info-right {
         width: 100%;
         padding-top: 15%;
-        font-size: 9px;
+        font-size: 18px;
         display: flex;
         flex-direction: column;
         gap: 20px;
