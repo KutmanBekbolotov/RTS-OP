@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import TechPassportPrint from "@/components/TechPassportPrint";
+import { SearchResult } from "@/components/types";
 
 interface SpravkaProps {
   registrationType: string;
@@ -148,7 +150,95 @@ const RegistrationForm = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const toPrintableValue = (value: string): string | null => {
+    const normalized = value.trim();
+    return normalized === "" ? null : normalized;
+  };
+
+  const buildTechPassportPrintData = (): SearchResult => ({
+    registrationType: toPrintableValue(spravkaData.registrationType),
+    registrationDate: toPrintableValue(spravkaData.registrationDate),
+    receiveDate: toPrintableValue(spravkaData.receiveDate),
+    territorialDepartment: toPrintableValue(spravkaData.territorialDepartment),
+    district: null,
+    organizationName: toPrintableValue(spravkaData.organizationName),
+    subdivision: toPrintableValue(spravkaData.subdivision),
+    address: toPrintableValue(spravkaData.address),
+    stateNumber: toPrintableValue(spravkaData.stateNumber),
+    techPassportNumber: toPrintableValue(spravkaData.techPassportNumber),
+    expirationDate: toPrintableValue(spravkaData.expirationDate),
+    submissionDate: toPrintableValue(spravkaData.submissionDate),
+    stateNumberSubmissionDate: toPrintableValue(spravkaData.stateNumberSubmissionDate),
+    fullName: toPrintableValue(spravkaData.fullName),
+    note: toPrintableValue(spravkaData.note),
+    model: toPrintableValue(techPassportData.model),
+    yearOfManufacture: toPrintableValue(techPassportData.yearOfManufacture),
+    color: toPrintableValue(techPassportData.color),
+    vin: toPrintableValue(techPassportData.vin),
+    chassisNumber: toPrintableValue(techPassportData.chassisNumber),
+    bodyType: toPrintableValue(techPassportData.bodyType),
+    seatCount: toPrintableValue(techPassportData.seatCount),
+    fuelType: toPrintableValue(techPassportData.fuelType),
+    registrationNumber: toPrintableValue(techPassportData.registrationNumber),
+    vid: toPrintableValue(techPassportData.vid),
+    owner: toPrintableValue(techPassportData.owner),
+    personalNumber: toPrintableValue(techPassportData.personalNumber),
+    ownerAddress: toPrintableValue(techPassportData.ownerAddress),
+    issuingAuthority: toPrintableValue(techPassportData.issuingAuthority),
+    authorizedSignature: toPrintableValue(techPassportData.authorizedSignature),
+    engineCapacity: toPrintableValue(techPassportData.engineCapacity),
+    enginePower: toPrintableValue(techPassportData.enginePower),
+    unladenMass: toPrintableValue(techPassportData.unladenMass),
+    maxPermissibleMass: toPrintableValue(techPassportData.maxPermissibleMass),
+  });
+
+  const handlePrintTechPassport = async () => {
+    const printContent = document.getElementById("registration-print-passport");
+    if (!printContent) {
+      throw new Error("Не найден шаблон печати техпаспорта");
+    }
+
+    const clone = printContent.cloneNode(true) as HTMLElement;
+    clone.style.visibility = "visible";
+    clone.style.position = "static";
+
+    const tempDiv = document.createElement("div");
+    tempDiv.appendChild(clone);
+
+    const html = `
+      <html>
+        <head>
+          <style>
+            @page {
+              size: auto;
+              margin: 0;
+            }
+            html, body {
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              padding: 0;
+            }
+            .tech-passport-print {
+              width: 100vw;
+              height: 100vh;
+              box-sizing: border-box;
+              padding: 0;
+            }
+            * {
+              box-sizing: border-box;
+            }
+          </style>
+        </head>
+        <body>${tempDiv.innerHTML}</body>
+      </html>
+    `;
+
+    const pdfPath = await window.electron.openPDFPreview(html);
+    await window.electron.printGeneratedPDF(pdfPath);
+  };
+
+  const handleSubmit = async (printAfterSave = false) => {
     try {
       const dataToSend = {
         ...spravkaData,
@@ -159,13 +249,24 @@ const RegistrationForm = () => {
         submissionDate: spravkaData.submissionDate || null,
         stateNumberSubmissionDate: spravkaData.stateNumberSubmissionDate || null,
       };
-      // console.log('Data to send:', dataToSend);
-
       await window.electron.addRegistration(dataToSend);
+
+      let printErrorHappened = false;
+      if (printAfterSave) {
+        try {
+          await handlePrintTechPassport();
+        } catch (printError) {
+          printErrorHappened = true;
+          console.error("Ошибка печати техпаспорта:", printError);
+        }
+      }
+
       setNotification({
         open: true,
-        message: "Данные успешно сохранены!",
-        severity: "success",
+        message: printErrorHappened
+          ? "Данные сохранены, но печать техпаспорта не удалась."
+          : "Данные успешно сохранены!",
+        severity: printErrorHappened ? "error" : "success",
       });
       setSpravkaData(defaultSpravka);
       setTechPassportData(defaultTechPassport);
@@ -243,6 +344,8 @@ const RegistrationForm = () => {
     />
   );
 
+  const techPassportPrintData = buildTechPassportPrintData();
+
   return (
     <Box className="page-shell" sx={{ maxWidth: 880 }}>
       <Paper
@@ -285,11 +388,109 @@ const RegistrationForm = () => {
           <Button variant="outlined" onClick={() => navigate("/")}>
             Назад
           </Button>
-          <Button variant="contained" onClick={handleSubmit}>
-            Сохранить
-          </Button>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <Button variant="outlined" onClick={() => void handleSubmit(true)}>
+              Сохранить и печать техпаспорта
+            </Button>
+            <Button variant="contained" onClick={() => void handleSubmit(false)}>
+              Сохранить
+            </Button>
+          </Box>
         </Box>
       </Paper>
+
+      <div
+        id="registration-print-passport"
+        style={{
+          position: "absolute",
+          top: "-9999px",
+          left: "-9999px",
+          width: "14.80cm",
+          height: "10.50cm",
+          visibility: "hidden",
+        }}
+      >
+        <style>
+          {`
+            html, body {
+              margin: 0;
+              padding: 0;
+              width: 100%;
+              height: 100%;
+            }
+            .container {
+              display: flex;
+              width: 100%;
+              height: 100%;
+              box-sizing: border-box;
+            }
+            .main-info-left {
+              width: 100%;
+              padding-top: 15%;
+              font-size: 18px;
+              display: flex;
+              flex-direction: column;
+              gap: 15px;
+              box-sizing: border-box;
+              align-items: flex-end;
+            }
+            .main-info-right {
+              width: 100%;
+              padding-top: 15%;
+              font-size: 18px;
+              display: flex;
+              flex-direction: column;
+              gap: 20px;
+              box-sizing: border-box;
+              align-items: flex-end;
+            }
+            .main-info-right-top {
+              display: flex;
+              flex-direction: column;
+              gap: 21px;
+            }
+            .main-info-right-middle {
+              display: flex;
+              flex-direction: column;
+              gap: 20px;
+              margin-top: 9.5%;
+              align-items: flex-end;
+              width: 50%;
+            }
+            .main-info-right-bottom {
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              margin-top: 3.8%;
+              width: 20%;
+            }
+            h6 {
+              display: none !important;
+            }
+            .address {
+             align-items:flex-end;
+             text-align: end;
+             width: 70%;
+            }
+            .address span {
+              display: block;
+              white-space: normal;
+              overflow-wrap: break-word;
+              word-break: break-word;
+              text-align: left;
+            }
+            .tech-passport-print {
+              width: 97%;
+              height: 100%;
+              box-sizing: border-box;
+              padding: 0;
+              display: flex;
+              flex-direction: column;
+            }
+          `}
+        </style>
+        <TechPassportPrint searchResult={techPassportPrintData} />
+      </div>
 
       <Snackbar
         open={notification.open}
