@@ -18,6 +18,7 @@ const getPrintPreviewLib = () => {
 let mainWindow = null;
 const PASSWORD = process.env.RTS_OP_PASSWORD ?? "123";
 const ALLOWED_SEARCH_FIELDS = new Set(["stateNumber", "techPassportNumber"]);
+const ISSUED_STATE_NUMBER_CONDITION = "stateNumber IS NOT NULL AND TRIM(stateNumber) <> ''";
 const createWindow = async () => {
     const preloadPath = path_1.default.join(__dirname, "preload.js");
     mainWindow = new electron_1.BrowserWindow({
@@ -242,6 +243,59 @@ electron_1.ipcMain.handle("search-vehicle", async (_event, searchParams) => {
     const db = await (0, database_1.openDatabase)();
     try {
         return await db.get(`SELECT * FROM registrations WHERE ${type} = ?`, [normalizedQuery]);
+    }
+    finally {
+        await db.close();
+    }
+});
+electron_1.ipcMain.handle("get-issued-numbers-report", async (_event, filter) => {
+    const db = await (0, database_1.openDatabase)();
+    try {
+        const summaryByAuthorities = await db.all(`SELECT organizationName AS authorityName, COUNT(*) AS issuedCount
+       FROM registrations
+       WHERE ${ISSUED_STATE_NUMBER_CONDITION}
+         AND organizationName IS NOT NULL
+         AND TRIM(organizationName) <> ''
+       GROUP BY organizationName
+       ORDER BY organizationName COLLATE NOCASE`);
+        const summaryBySubdivisions = await db.all(`SELECT subdivision AS subdivisionName, COUNT(*) AS issuedCount
+       FROM registrations
+       WHERE ${ISSUED_STATE_NUMBER_CONDITION}
+         AND subdivision IS NOT NULL
+         AND TRIM(subdivision) <> ''
+       GROUP BY subdivision
+       ORDER BY subdivision COLLATE NOCASE`);
+        let details = [];
+        if (filter?.scope === "authority") {
+            const authorityName = filter.authorityName.trim();
+            if (!authorityName) {
+                throw new Error("Не выбрано наименование госоргана");
+            }
+            details = await db.all(`SELECT stateNumber, techPassportNumber
+         FROM registrations
+         WHERE ${ISSUED_STATE_NUMBER_CONDITION}
+           AND organizationName = ?
+         ORDER BY id ASC`, [authorityName]);
+        }
+        else if (filter?.scope === "subdivision") {
+            const subdivisionName = filter.subdivisionName.trim();
+            if (!subdivisionName) {
+                throw new Error("Не выбрано подразделение");
+            }
+            details = await db.all(`SELECT stateNumber, techPassportNumber
+         FROM registrations
+         WHERE ${ISSUED_STATE_NUMBER_CONDITION}
+           AND subdivision = ?
+         ORDER BY id ASC`, [subdivisionName]);
+        }
+        else if (filter !== null) {
+            throw new Error("Некорректный тип фильтра отчета");
+        }
+        return {
+            summaryByAuthorities,
+            summaryBySubdivisions,
+            details,
+        };
     }
     finally {
         await db.close();

@@ -18,5 +18,6 @@ const electronAPI = {
     addSubdivision: (params) => electron_1.ipcRenderer.invoke("add-subdivision", params),
     deleteAuthority: (id) => electron_1.ipcRenderer.invoke("delete-authority", id),
     deleteSubdivision: (id) => electron_1.ipcRenderer.invoke("delete-subdivision", id),
+    getIssuedNumbersReport: (filter) => electron_1.ipcRenderer.invoke("get-issued-numbers-report", filter),
 };
 electron_1.contextBridge.exposeInMainWorld("electron", electronAPI);

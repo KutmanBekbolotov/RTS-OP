@@ -13,6 +13,31 @@ interface AuthorityDirectoryItem extends Authority {
   subdivisions: Subdivision[];
 }
 
+type ReportFilter =
+  | { scope: "authority"; authorityName: string }
+  | { scope: "subdivision"; subdivisionName: string };
+
+interface AuthorityIssuedSummary {
+  authorityName: string;
+  issuedCount: number;
+}
+
+interface SubdivisionIssuedSummary {
+  subdivisionName: string;
+  issuedCount: number;
+}
+
+interface IssuedNumberDetail {
+  stateNumber: string;
+  techPassportNumber: string | null;
+}
+
+interface IssuedNumbersReport {
+  summaryByAuthorities: AuthorityIssuedSummary[];
+  summaryBySubdivisions: SubdivisionIssuedSummary[];
+  details: IssuedNumberDetail[];
+}
+
 interface IElectronAPI {
   addRegistration: (formData: unknown) => Promise<{ success: boolean; message: string }>;
   updateRegistration: (formData: unknown) => Promise<{ success: boolean; data: any }>;
@@ -29,6 +54,7 @@ interface IElectronAPI {
   addSubdivision: (params: { authorityId: number; name: string }) => Promise<Subdivision>;
   deleteAuthority: (id: number) => Promise<{ success: boolean }>;
   deleteSubdivision: (id: number) => Promise<{ success: boolean }>;
+  getIssuedNumbersReport: (filter: ReportFilter | null) => Promise<IssuedNumbersReport>;
 }
 
 declare global {

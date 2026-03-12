@@ -37,6 +37,13 @@ const electronAPI = {
 
   deleteSubdivision: (id: number) => ipcRenderer.invoke("delete-subdivision", id),
 
+  getIssuedNumbersReport: (
+    filter:
+      | { scope: "authority"; authorityName: string }
+      | { scope: "subdivision"; subdivisionName: string }
+      | null,
+  ) => ipcRenderer.invoke("get-issued-numbers-report", filter),
+
 };
 
 contextBridge.exposeInMainWorld("electron", electronAPI);

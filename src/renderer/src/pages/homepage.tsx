@@ -34,6 +34,9 @@ function Home({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<React
                 <Button component={Link} to="/directory" variant="contained" fullWidth>
                     Справочник
                 </Button>
+                <Button component={Link} to="/reports" variant="contained" fullWidth>
+                    Отчеты
+                </Button>
                 <Button onClick={handleLogout} variant="contained" color="error" fullWidth>
                     Выход
                 </Button>

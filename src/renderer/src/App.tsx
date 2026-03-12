@@ -4,6 +4,7 @@ import Home from "./pages/homepage";
 import Search from "./pages/search";
 import Login from "./pages/loginpage";
 import Directory from "./pages/directory";
+import Reports from "./pages/reports";
 import { useState, useEffect } from "react";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/registration" element={<Registration />} />
           <Route path="/search" element={<Search />} />
           <Route path="/directory" element={<Directory />} />
+          <Route path="/reports" element={<Reports />} />
         </Route>
       </Routes>
     </Router>
