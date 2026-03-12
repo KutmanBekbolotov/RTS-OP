@@ -34,7 +34,15 @@ const CertificateContent: React.FC<Props> = ({ data }) => {
 
   return (
     <Box sx={{ mt: 4 }}>
-      <Paper sx={{ p: 3 }}>
+      <Paper
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+        }}
+      >
         <Typography variant="h5" align="center" sx={{ fontWeight: "bold", mb: 2 }}>
           СПРАВКА
         </Typography>

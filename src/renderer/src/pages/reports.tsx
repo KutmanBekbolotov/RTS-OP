@@ -176,9 +176,9 @@ const Reports = () => {
   }, [selectedOption, selectorOptions.length]);
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
+    <Box className="page-shell">
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h5">Отчеты</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Отчеты</Typography>
         <Button component={Link} to="/" variant="outlined">
           Назад
         </Button>
@@ -190,7 +190,16 @@ const Reports = () => {
         </Alert>
       )}
 
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper
+        sx={{
+          p: 2,
+          mb: 3,
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+        }}
+      >
         <Typography variant="subtitle1" sx={{ mb: 1 }}>
           Выбор органа или подразделения
         </Typography>
@@ -206,7 +215,15 @@ const Reports = () => {
       </Paper>
 
       <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" }, mb: 3 }}>
-        <Paper sx={{ p: 2 }}>
+        <Paper
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            border: "1px solid #d8e1ef",
+            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+            backgroundColor: "rgba(255, 255, 255, 0.92)",
+          }}
+        >
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             По органам
           </Typography>
@@ -238,7 +255,15 @@ const Reports = () => {
           </TableContainer>
         </Paper>
 
-        <Paper sx={{ p: 2 }}>
+        <Paper
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            border: "1px solid #d8e1ef",
+            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+            backgroundColor: "rgba(255, 255, 255, 0.92)",
+          }}
+        >
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             По подразделениям
           </Typography>
@@ -271,7 +296,15 @@ const Reports = () => {
         </Paper>
       </Box>
 
-      <Paper sx={{ p: 2 }}>
+      <Paper
+        sx={{
+          p: 2,
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+        }}
+      >
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
           <Typography variant="subtitle1">
             {selectedOption

@@ -247,18 +247,18 @@ const Search = () => {
   };
 
   return (
-    <Box sx={{ padding: "20px", maxWidth: "100%", margin: "0 auto" }}>
+    <Box className="page-shell">
       <Box
         sx={{
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          position: "absolute",
-          top: 20,
-          width: "100%",
+          mb: 3,
+          gap: 2,
+          flexWrap: "wrap",
         }}
       >
-        <Typography variant="h4" sx={{ fontWeight: 500 }}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Поиск
         </Typography>
         <Button variant="contained" component={Link} to="/" sx={{ minWidth: "120px" }}>
@@ -266,13 +266,22 @@ const Search = () => {
         </Button>
       </Box>
 
-      <Paper sx={{ p: 3, mt: 10 }}>
+      <Paper
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+          backdropFilter: "blur(6px)",
+        }}
+      >
         <Tabs value={searchType} onChange={(_, newValue) => setSearchType(newValue)} sx={{ mb: 3 }}>
           <Tab label="Поиск по гос. номеру" />
           <Tab label="Поиск по номеру техпаспорта" />
         </Tabs>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" } }}>
           <TextField
             fullWidth
             label={searchType === 0 ? "Гос. номер" : "Номер техпаспорта"}
@@ -282,7 +291,11 @@ const Search = () => {
             helperText={error}
             variant="outlined"
           />
-          <Button variant="contained" onClick={handleSearch} sx={{ minWidth: "120px", height: "56px" }}>
+          <Button
+            variant="contained"
+            onClick={handleSearch}
+            sx={{ minWidth: { sm: "120px" }, height: "56px" }}
+          >
             Поиск
           </Button>
         </Box>
@@ -292,7 +305,7 @@ const Search = () => {
   <>
   <CertificateContent data={searchResult} />
 
-  <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2 }}>
+  <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 2, flexWrap: "wrap" }}>
     <Button variant="contained" onClick={() => handlePrint("print-certificate")}>
       Печать справки
     </Button>

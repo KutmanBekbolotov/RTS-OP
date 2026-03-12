@@ -181,15 +181,24 @@ const Directory = () => {
   };
 
   return (
-    <Box sx={{ p: 3, maxWidth: 1000, mx: "auto" }}>
+    <Box className="page-shell" sx={{ maxWidth: 1100 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h5">Справочник госорганов</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Справочник госорганов</Typography>
         <Button component={Link} to="/" variant="outlined">
           Назад
         </Button>
       </Box>
 
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper
+        sx={{
+          p: 2,
+          mb: 3,
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+        }}
+      >
         <Box sx={{ display: "flex", gap: 2 }}>
           <TextField
             label="Наименование госоргана"
@@ -204,7 +213,16 @@ const Directory = () => {
       </Paper>
 
       <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
-        <Paper sx={{ p: 2, flex: 1 }}>
+        <Paper
+          sx={{
+            p: 2,
+            flex: 1,
+            borderRadius: 3,
+            border: "1px solid #d8e1ef",
+            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+            backgroundColor: "rgba(255, 255, 255, 0.92)",
+          }}
+        >
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Органы
           </Typography>
@@ -235,7 +253,16 @@ const Directory = () => {
           )}
         </Paper>
 
-        <Paper sx={{ p: 2, flex: 1 }}>
+        <Paper
+          sx={{
+            p: 2,
+            flex: 1,
+            borderRadius: 3,
+            border: "1px solid #d8e1ef",
+            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+            backgroundColor: "rgba(255, 255, 255, 0.92)",
+          }}
+        >
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Подразделения {selectedAuthority ? `(${selectedAuthority.name})` : ""}
           </Typography>

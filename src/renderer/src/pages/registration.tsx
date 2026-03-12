@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert } from "@mui/material";
+import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 interface SpravkaProps {
@@ -244,39 +244,52 @@ const RegistrationForm = () => {
   );
 
   return (
-    <Box sx={{ p: 3, maxWidth: 800, mx: "auto" }}>
-      <Typography variant="h5" gutterBottom>Регистрация автомобиля</Typography>
+    <Box className="page-shell" sx={{ maxWidth: 880 }}>
+      <Paper
+        sx={{
+          p: { xs: 2, md: 3 },
+          borderRadius: 3,
+          border: "1px solid #d8e1ef",
+          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
+          backgroundColor: "rgba(255, 255, 255, 0.92)",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+          Регистрация автомобиля
+        </Typography>
 
-      {/* Spravka Fields */}
-      {renderTextField("Тип регистрации", "registrationType")}
-      {renderDateField("Дата регистрации", "registrationDate")}
-      {renderDateField("Дата получения", "receiveDate")}
-      {renderTextField("Территориальный отдел", "territorialDepartment")}
-      {renderAuthorityField("Наименование органа", "organizationName")}
-      {renderSubdivisionField()}
-      {renderTextField("Адрес органа", "address")}
-      {renderTextField("Гос номер", "stateNumber")}
-      {renderTextField("Номер техпаспорта", "techPassportNumber")}
-      {renderDateField("Срок окончания", "expirationDate")}
-      {renderDateField("Дата сдачи техпаспорта", "submissionDate")}
-      {renderDateField("Дата сдачи гос номера", "stateNumberSubmissionDate")}
-      {renderTextField("ФИО", "fullName")}
-      {renderTextField("Примечание", "note")}
+        {/* Spravka Fields */}
+        {renderTextField("Тип регистрации", "registrationType")}
+        {renderDateField("Дата регистрации", "registrationDate")}
+        {renderDateField("Дата получения", "receiveDate")}
+        {renderTextField("Территориальный отдел", "territorialDepartment")}
+        {renderAuthorityField("Наименование органа", "organizationName")}
+        {renderSubdivisionField()}
+        {renderTextField("Адрес органа", "address")}
+        {renderTextField("Гос номер", "stateNumber")}
+        {renderTextField("Номер техпаспорта", "techPassportNumber")}
+        {renderDateField("Срок окончания", "expirationDate")}
+        {renderDateField("Дата сдачи техпаспорта", "submissionDate")}
+        {renderDateField("Дата сдачи гос номера", "stateNumberSubmissionDate")}
+        {renderTextField("ФИО", "fullName")}
+        {renderTextField("Примечание", "note")}
 
-      {/* Tech Passport Fields */}
-      {renderTextField("Модель", "model")}
-      {renderTextField("Адрес собственника", "ownerAddress")}
-      {renderAuthorityField("Орган выдачи", "issuingAuthority")}
-      {renderTextField("Подпись уполномоченного", "authorizedSignature")}
+        {/* Tech Passport Fields */}
+        {renderTextField("Модель", "model")}
+        {renderTextField("Адрес собственника", "ownerAddress")}
+        {renderAuthorityField("Орган выдачи", "issuingAuthority")}
+        {renderTextField("Подпись уполномоченного", "authorizedSignature")}
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3 }}>
-        <Button variant="outlined" onClick={() => navigate("/")}>
-          Назад
-        </Button>
-        <Button variant="contained" onClick={handleSubmit}>
-          Сохранить
-        </Button>
-      </Box>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3, gap: 2 }}>
+          <Button variant="outlined" onClick={() => navigate("/")}>
+            Назад
+          </Button>
+          <Button variant="contained" onClick={handleSubmit}>
+            Сохранить
+          </Button>
+        </Box>
+      </Paper>
 
       <Snackbar
         open={notification.open}
