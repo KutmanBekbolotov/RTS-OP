@@ -246,6 +246,8 @@ const Search = () => {
     }
   };
 
+  
+
   return (
     <Box className="page-shell">
       <Box
@@ -469,12 +471,12 @@ const Search = () => {
       padding: 0;
       display: flex;
       flex-direction: column;
-      font-size: 12px;
+      font-size: 13px;
       line-height: 1.15;
     }
 
     h1, h2, h3, h4, h5, h6, p, span, div {
-      font-size: 11px !important;
+      font-size: 13px !important;
       line-height: 1.15 !important;
       font-weight: 400;
     }

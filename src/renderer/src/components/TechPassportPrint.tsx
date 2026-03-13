@@ -64,6 +64,21 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
     return authority ? [authority] : [];
   };
 
+  const formatDateToRu = (value: string | null): string => {
+  const normalized = formatPrintValue(value);
+  if (!normalized) {
+    return "";
+  }
+
+  const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) {
+    const [, year, month, day] = match;
+    return `${day}.${month}.${year}`;
+  }
+
+  return normalized;
+};
+
   const ownerLines = getOwnerLines();
   const issuingAuthorityLines = getIssuingAuthorityLines();
 
@@ -136,7 +151,7 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
           <div className="main-info-right-top">
             <div className="registerNumber">
               <h6>РЕГИСТРАЦИОННЫЙ НОМЕР</h6>
-              <span style={{ fontSize: "40px", lineHeight: 1 }}>
+              <span style={{ fontSize: "64px", lineHeight: 1 }}>
                 {formatRegistrationValue()}
               </span>
             </div>
@@ -189,8 +204,8 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
             </div>
 
             <div className="registerDate">
-              <h6>ДАТА РЕГИСТРАЦИИ</h6>
-              <span>{formatPrintValue(searchResult.registrationDate)}</span>
+            <h6>ДАТА РЕГИСТРАЦИИ</h6>
+            <span>{formatDateToRu(searchResult.registrationDate)}</span>
             </div>
 
             <div className="signature">
