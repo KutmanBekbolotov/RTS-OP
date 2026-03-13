@@ -432,11 +432,11 @@ const Search = () => {
       line-height: 1.15;
     }
 
-    .nomer{
-      font-size: 56px;
-      line-height: 1.15;
-      font-weight: 400
-    }
+    .number {
+    font-size: 29px !important;
+    line-height: 1 !important;
+    font-weight: 400 !important;
+}
 
     .tech-passport-print {
       width: 97%;
