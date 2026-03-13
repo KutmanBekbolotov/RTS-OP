@@ -16,52 +16,20 @@ import {
 } from "@mui/material";
 import TechPassportPrint from "@/components/TechPassportPrint";
 import CertificateContent from "@/components/certificateContent";
+import { SearchResult as SharedSearchResult } from "@/components/types";
 
-export interface SearchResult {
+type SearchResult = SharedSearchResult & {
   id: number | null;
-  registrationType: string | null;
-  registrationDate: string | null;
-  receiveDate: string | null;
-  territorialDepartment: string | null;
-  district: string | null;
-  organizationName: string | null;
-  subdivision: string | null;
-  address: string | null;
-  stateNumber: string | null;
-  techPassportNumber: string | null;
-  expirationDate: string | null;
-  submissionDate: string | null;
-  stateNumberSubmissionDate: string | null;
-  fullName: string | null;
-  note: string | null;
-  model: string | null;
-  yearOfManufacture: string | null;
-  color: string | null;
-  vin: string | null;
-  chassisNumber: string | null;
-  bodyType: string | null;
-  seatCount: string | null;
-  fuelType: string | null;
-  registrationNumber: string | null;
-  vid: string | null;
-  owner: string | null;
-  personalNumber: string | null;
-  ownerAddress: string | null;
-  issuingAuthority: string | null;
-  authorizedSignature: string | null;
-  engineCapacity: string | null;
-  enginePower: string | null;
-  unladenMass: string | null;
-  maxPermissibleMass: string | null;
-}
+};
 
-type EditableFieldKey = Exclude<keyof SearchResult, "id" | "district">;
+type EditableFieldKey = Exclude<keyof SearchResult, "id">;
 
 const SPRAVKA_FIELDS: Array<{ key: EditableFieldKey; label: string; type?: "date" }> = [
   { key: "registrationType", label: "Тип регистрации" },
   { key: "registrationDate", label: "Дата регистрации", type: "date" },
   { key: "receiveDate", label: "Дата получения", type: "date" },
   { key: "territorialDepartment", label: "Территориальный отдел" },
+  { key: "district", label: "Район" },
   { key: "organizationName", label: "Наименование органа" },
   { key: "subdivision", label: "Подразделение" },
   { key: "address", label: "Адрес органа" },
@@ -70,7 +38,6 @@ const SPRAVKA_FIELDS: Array<{ key: EditableFieldKey; label: string; type?: "date
   { key: "expirationDate", label: "Срок окончания", type: "date" },
   { key: "submissionDate", label: "Дата сдачи техпаспорта", type: "date" },
   { key: "stateNumberSubmissionDate", label: "Дата сдачи гос номера", type: "date" },
-  { key: "fullName", label: "ФИО" },
   { key: "note", label: "Примечание" },
 ];
 
@@ -233,6 +200,7 @@ const Search = () => {
       for (const field of ALL_EDITABLE_FIELDS) {
         payload[field.key] = toNullable(editData[field.key]);
       }
+      payload.fullName = null;
 
       const response = await window.electron.updateRegistration(payload);
       setSearchResult(response.data);

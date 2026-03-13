@@ -61,6 +61,7 @@ const CertificateContent: React.FC<Props> = ({ data }) => {
               {renderField("Дата регистрации", data.registrationDate)}
               {renderField("Дата получения", data.receiveDate)}
               {renderField("Территориальный отдел", data.territorialDepartment)}
+              {renderField("Район", data.district)}
               {renderField("Наименование органа", data.organizationName)}
               {renderField("Подразделение", data.subdivision)}
               {renderField("Адрес", data.address)}
@@ -69,7 +70,6 @@ const CertificateContent: React.FC<Props> = ({ data }) => {
               {renderField("Срок окончания", data.expirationDate)}
               {renderField("Дата сдачи", data.submissionDate)}
               {renderField("Дата сдачи гос. номера", data.stateNumberSubmissionDate)}
-              {renderField("ФИО", data.fullName)}
               {renderField("Примечание", data.note)}
               {renderField("Объем двигателя", data.engineCapacity)}
               {renderField("Мощность двигателя", data.enginePower)}

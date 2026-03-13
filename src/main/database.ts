@@ -38,6 +38,7 @@ export const createTable = async () => {
         registrationDate TEXT,
         receiveDate TEXT,
         territorialDepartment TEXT,
+        district TEXT,
         organizationName TEXT,
         subdivision TEXT,
         address TEXT,
@@ -69,6 +70,14 @@ export const createTable = async () => {
         authorizedSignature TEXT
       )
     `);
+
+    const registrationColumns = await db.all<Array<{ name: string }>>(
+      `PRAGMA table_info(registrations)`,
+    );
+    const hasDistrictColumn = registrationColumns.some((column) => column.name === "district");
+    if (!hasDistrictColumn) {
+      await db.exec(`ALTER TABLE registrations ADD COLUMN district TEXT`);
+    }
 
     await db.exec(`
       CREATE TABLE IF NOT EXISTS authorities (
@@ -102,20 +111,21 @@ export const insertRegistrationData = async (formData: any) => {
     const result = await db.run(`
       INSERT INTO registrations (
         registrationType, registrationDate, receiveDate, territorialDepartment,
-        organizationName, subdivision, address, stateNumber,
+        district, organizationName, subdivision, address, stateNumber,
         techPassportNumber, expirationDate, submissionDate,
         stateNumberSubmissionDate, fullName, note,
         model, yearOfManufacture, color, vin, chassisNumber,
         bodyType, seatCount, fuelType, engineCapacity, enginePower,
         unladenMass, maxPermissibleMass, registrationNumber, vid,
         owner, personalNumber, ownerAddress, issuingAuthority, authorizedSignature
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
               ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       formData.registrationType,
       formData.registrationDate,
       formData.receiveDate,
       formData.territorialDepartment,
+      formData.district,
       formData.organizationName,
       formData.subdivision,
       formData.address,
@@ -161,6 +171,7 @@ export const updateRegistrationData = async (formData: any) => {
         registrationDate = ?,
         receiveDate = ?,
         territorialDepartment = ?,
+        district = ?,
         organizationName = ?,
         subdivision = ?,
         address = ?,
@@ -196,6 +207,7 @@ export const updateRegistrationData = async (formData: any) => {
       formData.registrationDate,
       formData.receiveDate,
       formData.territorialDepartment,
+      formData.district,
       formData.organizationName,
       formData.subdivision,
       formData.address,

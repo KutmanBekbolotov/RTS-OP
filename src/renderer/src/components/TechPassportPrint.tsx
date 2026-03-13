@@ -64,8 +64,25 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
     return authority ? [authority] : [];
   };
 
+  const getAddressLines = (): string[] => {
+    const district = formatPrintValue(searchResult.district);
+    const address = formatPrintValue(searchResult.ownerAddress) || formatPrintValue(searchResult.address);
+    const lines: string[] = [];
+
+    if (district) {
+      lines.push(district);
+    }
+
+    if (address && !lines.some((line) => line.toLowerCase() === address.toLowerCase())) {
+      lines.push(address);
+    }
+
+    return lines;
+  };
+
   const ownerLines = getOwnerLines();
   const issuingAuthorityLines = getIssuingAuthorityLines();
+  const addressLines = getAddressLines();
 
   return (
     <div className="tech-passport-print">
@@ -168,8 +185,17 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
 
             <div className="address">
               <h6>АДРЕС СОБСТВЕННИКА</h6>
-              <span style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", display: "block", maxWidth: "100%" }}>
-                {formatPrintValue(searchResult.ownerAddress)}
+              <span
+                style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", display: "block", maxWidth: "100%" }}
+              >
+                {addressLines.length > 0
+                  ? addressLines.map((line, index) => (
+                    <React.Fragment key={`${line}-${index}`}>
+                      {line}
+                      {index < addressLines.length - 1 ? <br /> : null}
+                    </React.Fragment>
+                  ))
+                  : ""}
               </span>
             </div>
           </div>

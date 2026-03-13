@@ -9,6 +9,7 @@ interface SpravkaProps {
   registrationDate: string;
   receiveDate: string;
   territorialDepartment: string;
+  district: string;
   organizationName: string;
   subdivision: string;
   address: string;
@@ -17,7 +18,6 @@ interface SpravkaProps {
   expirationDate: string;
   submissionDate: string;
   stateNumberSubmissionDate: string;
-  fullName: string;
   note: string;
 }
 
@@ -60,6 +60,7 @@ const defaultSpravka: SpravkaProps = {
   registrationDate: "",
   receiveDate: "",
   territorialDepartment: "ГЦ РТСВС",
+  district: "",
   organizationName: "",
   subdivision: "",
   address: "",
@@ -68,7 +69,6 @@ const defaultSpravka: SpravkaProps = {
   expirationDate: "",
   submissionDate: "",
   stateNumberSubmissionDate: "",
-  fullName: "",
   note: "",
 };
 
@@ -160,7 +160,7 @@ const RegistrationForm = () => {
     registrationDate: toPrintableValue(spravkaData.registrationDate),
     receiveDate: toPrintableValue(spravkaData.receiveDate),
     territorialDepartment: toPrintableValue(spravkaData.territorialDepartment),
-    district: null,
+    district: toPrintableValue(spravkaData.district),
     organizationName: toPrintableValue(spravkaData.organizationName),
     subdivision: toPrintableValue(spravkaData.subdivision),
     address: toPrintableValue(spravkaData.address),
@@ -169,7 +169,7 @@ const RegistrationForm = () => {
     expirationDate: toPrintableValue(spravkaData.expirationDate),
     submissionDate: toPrintableValue(spravkaData.submissionDate),
     stateNumberSubmissionDate: toPrintableValue(spravkaData.stateNumberSubmissionDate),
-    fullName: toPrintableValue(spravkaData.fullName),
+    fullName: null,
     note: toPrintableValue(spravkaData.note),
     model: toPrintableValue(techPassportData.model),
     yearOfManufacture: toPrintableValue(techPassportData.yearOfManufacture),
@@ -240,15 +240,14 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (printAfterSave = false) => {
     try {
-      const dataToSend = {
+      const rawDataToSend = {
         ...spravkaData,
         ...techPassportData,
-        registrationDate: spravkaData.registrationDate || null,
-        receiveDate: spravkaData.receiveDate || null,
-        expirationDate: spravkaData.expirationDate || null,
-        submissionDate: spravkaData.submissionDate || null,
-        stateNumberSubmissionDate: spravkaData.stateNumberSubmissionDate || null,
+        fullName: "",
       };
+      const dataToSend = Object.fromEntries(
+        Object.entries(rawDataToSend).map(([key, value]) => [key, toPrintableValue(value)]),
+      );
       await window.electron.addRegistration(dataToSend);
 
       let printErrorHappened = false;
@@ -274,7 +273,7 @@ const RegistrationForm = () => {
       console.error("Ошибка при сохранении:", err);
       setNotification({
         open: true,
-        message: "Ошибка при сохранении данных.",
+        message: err instanceof Error ? err.message : "Ошибка при сохранении данных.",
         severity: "error",
       });
     }
@@ -369,13 +368,13 @@ const RegistrationForm = () => {
         {renderTextField("Территориальный отдел", "territorialDepartment")}
         {renderAuthorityField("Наименование органа", "organizationName")}
         {renderSubdivisionField()}
+        {renderTextField("Район", "district")}
         {renderTextField("Адрес органа", "address")}
         {renderTextField("Гос номер", "stateNumber")}
         {renderTextField("Номер техпаспорта", "techPassportNumber")}
         {renderDateField("Срок окончания", "expirationDate")}
         {renderDateField("Дата сдачи техпаспорта", "submissionDate")}
         {renderDateField("Дата сдачи гос номера", "stateNumberSubmissionDate")}
-        {renderTextField("ФИО", "fullName")}
         {renderTextField("Примечание", "note")}
 
         {/* Tech Passport Fields */}
