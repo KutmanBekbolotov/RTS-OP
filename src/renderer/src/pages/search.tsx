@@ -403,7 +403,7 @@ const Search = () => {
       gap: 20px;
       margin-top: 11%;
       align-items: flex-end;
-      width: 50%;
+      width: 65%;
     }
 
     .main-info-right-bottom {
@@ -430,6 +430,12 @@ const Search = () => {
       text-align: right;
       font-size: 12px;
       line-height: 1.15;
+    }
+
+    .nomer{
+      font-size: 56px;
+      line-height: 1.15;
+      font-weight: 400
     }
 
     .tech-passport-print {
