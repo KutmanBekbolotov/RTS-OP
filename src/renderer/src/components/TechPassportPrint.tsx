@@ -169,7 +169,7 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
           <div className="main-info-right-top">
             <div className="registerNumber">
               <h6>РЕГИСТРАЦИОННЫЙ НОМЕР</h6>
-              <span style={{ fontSize: "64px", lineHeight: 1 }}>
+              <span className="number">
                 {formatRegistrationValue()}
               </span>
             </div>

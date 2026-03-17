@@ -357,7 +357,7 @@ const Search = () => {
 
     * {
       box-sizing: border-box;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.15;
       color: #000;
     }
@@ -372,7 +372,7 @@ const Search = () => {
     .main-info-left {
       width: 100%;
       padding-top: 13.5%;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       flex-direction: column;
       gap: 15px;
@@ -383,7 +383,7 @@ const Search = () => {
     .main-info-right {
       width: 100%;
       padding-top: 13%;
-      font-size: 12px;
+      font-size: 11px;
       display: flex;
       flex-direction: column;
       gap: 20px;
@@ -409,8 +409,8 @@ const Search = () => {
     .main-info-right-bottom {
       display: flex;
       flex-direction: column;
-      gap: 15px;
-      margin-top: 4%;
+      gap: 5px;
+      margin-bottom: 15px;
       width: 25%;
     }
 
@@ -418,7 +418,7 @@ const Search = () => {
       align-items: flex-end;
       text-align: end;
       width: 80%;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.15;
     }
 
@@ -428,14 +428,14 @@ const Search = () => {
       overflow-wrap: break-word;
       word-break: break-word;
       text-align: right;
-      font-size: 12px;
+      font-size: 11px;
       line-height: 1.15;
     }
 
-    .nomer{
-      font-size: 56px;
-      line-height: 1.15;
-      font-weight: 400
+    .number {
+      font-size: 20px !important;
+      line-height: 1 !important;
+      font-weight: 400 !important;
     }
 
     .tech-passport-print {
@@ -445,12 +445,12 @@ const Search = () => {
       padding: 0;
       display: flex;
       flex-direction: column;
-      font-size: 13px;
+      font-size: 11px;
       line-height: 1.15;
     }
 
     h1, h2, h3, h4, h5, h6, p, span, div {
-      font-size: 13px !important;
+      font-size: 11px !important;
       line-height: 1.15 !important;
       font-weight: 400;
     }
