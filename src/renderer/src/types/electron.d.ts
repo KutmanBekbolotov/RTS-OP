@@ -13,6 +13,14 @@ interface AuthorityDirectoryItem extends Authority {
   subdivisions: Subdivision[];
 }
 
+type SimpleDirectoryType = "registrationType" | "district";
+
+interface SimpleDirectoryItem {
+  id: number;
+  type: SimpleDirectoryType;
+  name: string;
+}
+
 type ReportFilter =
   | { scope: "authority"; authorityName: string }
   | { scope: "subdivision"; subdivisionName: string };
@@ -54,6 +62,9 @@ interface IElectronAPI {
   addSubdivision: (params: { authorityId: number; name: string }) => Promise<Subdivision>;
   deleteAuthority: (id: number) => Promise<{ success: boolean }>;
   deleteSubdivision: (id: number) => Promise<{ success: boolean }>;
+  getSimpleDirectoryItems: (type: SimpleDirectoryType) => Promise<SimpleDirectoryItem[]>;
+  addSimpleDirectoryItem: (params: { type: SimpleDirectoryType; name: string }) => Promise<SimpleDirectoryItem>;
+  deleteSimpleDirectoryItem: (id: number) => Promise<{ success: boolean }>;
   getIssuedNumbersReport: (filter: ReportFilter | null) => Promise<IssuedNumbersReport>;
 }
 

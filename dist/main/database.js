@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteSubdivision = exports.addSubdivision = exports.getAuthorityDirectory = exports.deleteAuthority = exports.addAuthority = exports.getAuthorities = exports.updateRegistrationData = exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
+exports.deleteSimpleDirectoryItem = exports.addSimpleDirectoryItem = exports.getSimpleDirectoryItems = exports.deleteSubdivision = exports.addSubdivision = exports.getAuthorityDirectory = exports.deleteAuthority = exports.addAuthority = exports.getAuthorities = exports.updateRegistrationData = exports.insertRegistrationData = exports.createTable = exports.openDatabase = void 0;
 const sqlite3_1 = __importDefault(require("sqlite3"));
 const sqlite_1 = require("sqlite");
 const electron_1 = require("electron");
@@ -80,6 +80,24 @@ const createTable = async () => {
         FOREIGN KEY(authorityId) REFERENCES authorities(id) ON DELETE CASCADE
       )
     `);
+        await db.exec(`
+      CREATE TABLE IF NOT EXISTS simple_directories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL COLLATE NOCASE,
+        UNIQUE(type, name)
+      )
+    `);
+        await db.run(`INSERT OR IGNORE INTO simple_directories (type, name)
+       SELECT 'registrationType', TRIM(registrationType)
+       FROM registrations
+       WHERE registrationType IS NOT NULL
+         AND TRIM(registrationType) <> ''`);
+        await db.run(`INSERT OR IGNORE INTO simple_directories (type, name)
+       SELECT 'district', TRIM(district)
+       FROM registrations
+       WHERE district IS NOT NULL
+         AND TRIM(district) <> ''`);
         console.log("Таблица успешно создана");
     }
     catch (error) {
@@ -322,3 +340,43 @@ const deleteSubdivision = async (id) => {
     }
 };
 exports.deleteSubdivision = deleteSubdivision;
+const getSimpleDirectoryItems = async (type) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        return db.all(`SELECT id, type, name
+       FROM simple_directories
+       WHERE type = ?
+       ORDER BY name COLLATE NOCASE`, [type]);
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.getSimpleDirectoryItems = getSimpleDirectoryItems;
+const addSimpleDirectoryItem = async (type, name) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        const result = await db.run(`INSERT INTO simple_directories (type, name) VALUES (?, ?)`, [type, name]);
+        const row = await db.get(`SELECT id, type, name
+       FROM simple_directories
+       WHERE id = ?`, [result.lastID]);
+        if (!row) {
+            throw new Error("Не удалось получить добавленный элемент справочника");
+        }
+        return row;
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.addSimpleDirectoryItem = addSimpleDirectoryItem;
+const deleteSimpleDirectoryItem = async (id) => {
+    const db = await (0, exports.openDatabase)();
+    try {
+        await db.run(`DELETE FROM simple_directories WHERE id = ?`, [id]);
+    }
+    finally {
+        await db.close();
+    }
+};
+exports.deleteSimpleDirectoryItem = deleteSimpleDirectoryItem;

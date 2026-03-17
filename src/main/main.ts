@@ -3,15 +3,19 @@ import { exec } from "child_process";
 import fs from "fs";
 import path from "path";
 import {
+  addSimpleDirectoryItem,
   addAuthority,
   addSubdivision,
   createTable,
+  deleteSimpleDirectoryItem,
   deleteAuthority,
   deleteSubdivision,
   getAuthorityDirectory,
   getAuthorities,
+  getSimpleDirectoryItems,
   insertRegistrationData,
   openDatabase,
+  SimpleDirectoryType,
   updateRegistrationData,
 } from "./database";
 
@@ -33,6 +37,7 @@ let mainWindow: BrowserWindow | null = null;
 const PASSWORD = process.env.RTS_OP_PASSWORD ?? "123";
 const ALLOWED_SEARCH_FIELDS = new Set(["stateNumber", "techPassportNumber"]);
 const ISSUED_STATE_NUMBER_CONDITION = "stateNumber IS NOT NULL AND TRIM(stateNumber) <> ''";
+const SIMPLE_DIRECTORY_TYPES = new Set<SimpleDirectoryType>(["registrationType", "district"]);
 
 type ReportFilter =
   | { scope: "authority"; authorityName: string }
@@ -306,6 +311,41 @@ ipcMain.handle("delete-subdivision", async (_event, id: number) => {
   }
 
   await deleteSubdivision(id);
+  return { success: true };
+});
+
+ipcMain.handle("get-simple-directory-items", async (_event, type: SimpleDirectoryType) => {
+  if (!SIMPLE_DIRECTORY_TYPES.has(type)) {
+    throw new Error("Некорректный тип справочника");
+  }
+
+  return getSimpleDirectoryItems(type);
+});
+
+ipcMain.handle(
+  "add-simple-directory-item",
+  async (_event, params: { type: SimpleDirectoryType; name: string }) => {
+    const type = params?.type;
+    const normalizedName = typeof params?.name === "string" ? params.name.trim() : "";
+
+    if (!SIMPLE_DIRECTORY_TYPES.has(type)) {
+      throw new Error("Некорректный тип справочника");
+    }
+
+    if (!normalizedName) {
+      throw new Error("Название элемента справочника не может быть пустым");
+    }
+
+    return addSimpleDirectoryItem(type, normalizedName);
+  },
+);
+
+ipcMain.handle("delete-simple-directory-item", async (_event, id: number) => {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error("Некорректный идентификатор элемента справочника");
+  }
+
+  await deleteSimpleDirectoryItem(id);
   return { success: true };
 });
 

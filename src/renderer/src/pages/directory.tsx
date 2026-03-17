@@ -26,11 +26,92 @@ interface AuthorityDirectoryItem {
   subdivisions: Subdivision[];
 }
 
+type SimpleDirectoryType = "registrationType" | "district";
+
+interface SimpleDirectoryItem {
+  id: number;
+  type: SimpleDirectoryType;
+  name: string;
+}
+
+interface SimpleDirectorySectionProps {
+  title: string;
+  inputLabel: string;
+  addButtonLabel: string;
+  emptyText: string;
+  value: string;
+  items: SimpleDirectoryItem[];
+  onChange: (value: string) => void;
+  onAdd: () => void;
+  onDelete: (id: number) => void;
+}
+
+const cardSx = {
+  p: 2,
+  borderRadius: 3,
+  border: "1px solid #d8e1ef",
+  boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
+  backgroundColor: "rgba(255, 255, 255, 0.92)",
+};
+
+const SimpleDirectorySection = ({
+  title,
+  inputLabel,
+  addButtonLabel,
+  emptyText,
+  value,
+  items,
+  onChange,
+  onAdd,
+  onDelete,
+}: SimpleDirectorySectionProps) => (
+  <Paper sx={cardSx}>
+    <Typography variant="subtitle1" sx={{ mb: 1 }}>
+      {title}
+    </Typography>
+
+    <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+      <TextField
+        label={inputLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        fullWidth
+      />
+      <Button variant="contained" onClick={onAdd} sx={{ minWidth: 140 }}>
+        {addButtonLabel}
+      </Button>
+    </Box>
+
+    {items.length === 0 ? (
+      <Typography color="text.secondary">{emptyText}</Typography>
+    ) : (
+      <List>
+        {items.map((item) => (
+          <ListItem
+            key={item.id}
+            secondaryAction={
+              <Button color="error" onClick={() => onDelete(item.id)}>
+                Удалить
+              </Button>
+            }
+          >
+            <ListItemText primary={item.name} />
+          </ListItem>
+        ))}
+      </List>
+    )}
+  </Paper>
+);
+
 const Directory = () => {
   const [directory, setDirectory] = useState<AuthorityDirectoryItem[]>([]);
   const [selectedAuthorityId, setSelectedAuthorityId] = useState<number | null>(null);
   const [authorityName, setAuthorityName] = useState("");
   const [subdivisionName, setSubdivisionName] = useState("");
+  const [registrationTypeName, setRegistrationTypeName] = useState("");
+  const [districtName, setDistrictName] = useState("");
+  const [registrationTypes, setRegistrationTypes] = useState<SimpleDirectoryItem[]>([]);
+  const [districts, setDistricts] = useState<SimpleDirectoryItem[]>([]);
   const [notification, setNotification] = useState<{
     open: boolean;
     message: string;
@@ -43,59 +124,69 @@ const Directory = () => {
 
   const selectedAuthority = directory.find((item) => item.id === selectedAuthorityId) ?? null;
 
-  const loadDirectory = async (preferredAuthorityId?: number | null) => {
-    try {
-      const result = await window.electron.getAuthorityDirectory();
-      setDirectory(result);
-      setSelectedAuthorityId((prev) => {
-        const targetId = preferredAuthorityId ?? prev;
-        if (targetId && result.some((item) => item.id === targetId)) {
-          return targetId;
-        }
+  const showNotification = (message: string, severity: "success" | "error") => {
+    setNotification({
+      open: true,
+      message,
+      severity,
+    });
+  };
 
-        return result.length > 0 ? result[0].id : null;
-      });
+  const loadAuthorityDirectory = async (preferredAuthorityId?: number | null) => {
+    const result = await window.electron.getAuthorityDirectory();
+    setDirectory(result);
+    setSelectedAuthorityId((prev) => {
+      const targetId = preferredAuthorityId ?? prev;
+      if (targetId && result.some((item) => item.id === targetId)) {
+        return targetId;
+      }
+
+      return result.length > 0 ? result[0].id : null;
+    });
+  };
+
+  const loadSimpleDirectory = async (type: SimpleDirectoryType) => {
+    const result = await window.electron.getSimpleDirectoryItems(type);
+    if (type === "registrationType") {
+      setRegistrationTypes(result);
+      return;
+    }
+
+    setDistricts(result);
+  };
+
+  const loadAllDirectories = async (preferredAuthorityId?: number | null) => {
+    try {
+      await Promise.all([
+        loadAuthorityDirectory(preferredAuthorityId),
+        loadSimpleDirectory("registrationType"),
+        loadSimpleDirectory("district"),
+      ]);
     } catch (error) {
-      console.error("Ошибка загрузки госорганов:", error);
-      setNotification({
-        open: true,
-        message: "Не удалось загрузить список госорганов.",
-        severity: "error",
-      });
+      console.error("Ошибка загрузки справочников:", error);
+      showNotification("Не удалось загрузить справочники.", "error");
     }
   };
 
   useEffect(() => {
-    void loadDirectory();
+    void loadAllDirectories();
   }, []);
 
   const handleAddAuthority = async () => {
     const normalizedName = authorityName.trim();
     if (!normalizedName) {
-      setNotification({
-        open: true,
-        message: "Введите наименование госоргана.",
-        severity: "error",
-      });
+      showNotification("Введите наименование госоргана.", "error");
       return;
     }
 
     try {
       const created = await window.electron.addAuthority(normalizedName);
       setAuthorityName("");
-      await loadDirectory(created.id);
-      setNotification({
-        open: true,
-        message: "Госорган добавлен.",
-        severity: "success",
-      });
+      await loadAuthorityDirectory(created.id);
+      showNotification("Госорган добавлен.", "success");
     } catch (error) {
       console.error("Ошибка добавления госоргана:", error);
-      setNotification({
-        open: true,
-        message: "Не удалось добавить госорган (возможно, уже существует).",
-        severity: "error",
-      });
+      showNotification("Не удалось добавить госорган (возможно, уже существует).", "error");
     }
   };
 
@@ -103,39 +194,23 @@ const Directory = () => {
     try {
       await window.electron.deleteAuthority(id);
       const preferredAuthorityId = selectedAuthorityId === id ? null : selectedAuthorityId;
-      await loadDirectory(preferredAuthorityId);
-      setNotification({
-        open: true,
-        message: "Госорган удален.",
-        severity: "success",
-      });
+      await loadAuthorityDirectory(preferredAuthorityId);
+      showNotification("Госорган удален.", "success");
     } catch (error) {
       console.error("Ошибка удаления госоргана:", error);
-      setNotification({
-        open: true,
-        message: "Не удалось удалить госорган.",
-        severity: "error",
-      });
+      showNotification("Не удалось удалить госорган.", "error");
     }
   };
 
   const handleAddSubdivision = async () => {
     if (!selectedAuthorityId) {
-      setNotification({
-        open: true,
-        message: "Сначала выберите госорган.",
-        severity: "error",
-      });
+      showNotification("Сначала выберите госорган.", "error");
       return;
     }
 
     const normalizedName = subdivisionName.trim();
     if (!normalizedName) {
-      setNotification({
-        open: true,
-        message: "Введите наименование подразделения.",
-        severity: "error",
-      });
+      showNotification("Введите наименование подразделения.", "error");
       return;
     }
 
@@ -145,45 +220,72 @@ const Directory = () => {
         name: normalizedName,
       });
       setSubdivisionName("");
-      await loadDirectory(selectedAuthorityId);
-      setNotification({
-        open: true,
-        message: "Подразделение добавлено.",
-        severity: "success",
-      });
+      await loadAuthorityDirectory(selectedAuthorityId);
+      showNotification("Подразделение добавлено.", "success");
     } catch (error) {
       console.error("Ошибка добавления подразделения:", error);
-      setNotification({
-        open: true,
-        message: "Не удалось добавить подразделение (возможно, уже существует).",
-        severity: "error",
-      });
+      showNotification("Не удалось добавить подразделение (возможно, уже существует).", "error");
     }
   };
 
   const handleDeleteSubdivision = async (id: number) => {
     try {
       await window.electron.deleteSubdivision(id);
-      await loadDirectory(selectedAuthorityId);
-      setNotification({
-        open: true,
-        message: "Подразделение удалено.",
-        severity: "success",
-      });
+      await loadAuthorityDirectory(selectedAuthorityId);
+      showNotification("Подразделение удалено.", "success");
     } catch (error) {
       console.error("Ошибка удаления подразделения:", error);
-      setNotification({
-        open: true,
-        message: "Не удалось удалить подразделение.",
-        severity: "error",
+      showNotification("Не удалось удалить подразделение.", "error");
+    }
+  };
+
+  const handleAddSimpleDirectoryItem = async (
+    type: SimpleDirectoryType,
+    value: string,
+    reset: () => void,
+    successMessage: string,
+    errorMessage: string,
+  ) => {
+    const normalizedName = value.trim();
+    if (!normalizedName) {
+      showNotification("Введите значение справочника.", "error");
+      return;
+    }
+
+    try {
+      await window.electron.addSimpleDirectoryItem({
+        type,
+        name: normalizedName,
       });
+      reset();
+      await loadSimpleDirectory(type);
+      showNotification(successMessage, "success");
+    } catch (error) {
+      console.error(`Ошибка добавления элемента справочника ${type}:`, error);
+      showNotification(errorMessage, "error");
+    }
+  };
+
+  const handleDeleteSimpleDirectoryItem = async (
+    type: SimpleDirectoryType,
+    id: number,
+    successMessage: string,
+    errorMessage: string,
+  ) => {
+    try {
+      await window.electron.deleteSimpleDirectoryItem(id);
+      await loadSimpleDirectory(type);
+      showNotification(successMessage, "success");
+    } catch (error) {
+      console.error(`Ошибка удаления элемента справочника ${type}:`, error);
+      showNotification(errorMessage, "error");
     }
   };
 
   return (
     <Box className="page-shell" sx={{ maxWidth: 1100 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>Справочник госорганов</Typography>
+        <Typography variant="h5" sx={{ fontWeight: 700 }}>Справочники</Typography>
         <Button component={Link} to="/" variant="outlined">
           Назад
         </Button>
@@ -212,17 +314,8 @@ const Directory = () => {
         </Box>
       </Paper>
 
-      <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" } }}>
-        <Paper
-          sx={{
-            p: 2,
-            flex: 1,
-            borderRadius: 3,
-            border: "1px solid #d8e1ef",
-            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
-            backgroundColor: "rgba(255, 255, 255, 0.92)",
-          }}
-        >
+      <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" }, mb: 3 }}>
+        <Paper sx={{ ...cardSx, flex: 1 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Органы
           </Typography>
@@ -253,16 +346,7 @@ const Directory = () => {
           )}
         </Paper>
 
-        <Paper
-          sx={{
-            p: 2,
-            flex: 1,
-            borderRadius: 3,
-            border: "1px solid #d8e1ef",
-            boxShadow: "0 10px 24px rgba(15, 23, 42, 0.06)",
-            backgroundColor: "rgba(255, 255, 255, 0.92)",
-          }}
-        >
+        <Paper sx={{ ...cardSx, flex: 1 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Подразделения {selectedAuthority ? `(${selectedAuthority.name})` : ""}
           </Typography>
@@ -306,6 +390,62 @@ const Directory = () => {
             </List>
           )}
         </Paper>
+      </Box>
+
+      <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" } }}>
+        <SimpleDirectorySection
+          title="Тип регистрации"
+          inputLabel="Новый тип регистрации"
+          addButtonLabel="Добавить"
+          emptyText="Справочник типов регистрации пуст."
+          value={registrationTypeName}
+          items={registrationTypes}
+          onChange={setRegistrationTypeName}
+          onAdd={() =>
+            void handleAddSimpleDirectoryItem(
+              "registrationType",
+              registrationTypeName,
+              () => setRegistrationTypeName(""),
+              "Тип регистрации добавлен.",
+              "Не удалось добавить тип регистрации (возможно, уже существует).",
+            )
+          }
+          onDelete={(id) =>
+            void handleDeleteSimpleDirectoryItem(
+              "registrationType",
+              id,
+              "Тип регистрации удален.",
+              "Не удалось удалить тип регистрации.",
+            )
+          }
+        />
+
+        <SimpleDirectorySection
+          title="Район"
+          inputLabel="Новый район"
+          addButtonLabel="Добавить"
+          emptyText="Справочник районов пуст."
+          value={districtName}
+          items={districts}
+          onChange={setDistrictName}
+          onAdd={() =>
+            void handleAddSimpleDirectoryItem(
+              "district",
+              districtName,
+              () => setDistrictName(""),
+              "Район добавлен.",
+              "Не удалось добавить район (возможно, уже существует).",
+            )
+          }
+          onDelete={(id) =>
+            void handleDeleteSimpleDirectoryItem(
+              "district",
+              id,
+              "Район удален.",
+              "Не удалось удалить район.",
+            )
+          }
+        />
       </Box>
 
       <Snackbar

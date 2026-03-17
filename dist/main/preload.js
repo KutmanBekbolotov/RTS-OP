@@ -18,6 +18,9 @@ const electronAPI = {
     addSubdivision: (params) => electron_1.ipcRenderer.invoke("add-subdivision", params),
     deleteAuthority: (id) => electron_1.ipcRenderer.invoke("delete-authority", id),
     deleteSubdivision: (id) => electron_1.ipcRenderer.invoke("delete-subdivision", id),
+    getSimpleDirectoryItems: (type) => electron_1.ipcRenderer.invoke("get-simple-directory-items", type),
+    addSimpleDirectoryItem: (params) => electron_1.ipcRenderer.invoke("add-simple-directory-item", params),
+    deleteSimpleDirectoryItem: (id) => electron_1.ipcRenderer.invoke("delete-simple-directory-item", id),
     getIssuedNumbersReport: (filter) => electron_1.ipcRenderer.invoke("get-issued-numbers-report", filter),
 };
 electron_1.contextBridge.exposeInMainWorld("electron", electronAPI);

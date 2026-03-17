@@ -18,6 +18,14 @@ export interface AuthorityDirectoryItem extends Authority {
   subdivisions: Subdivision[];
 }
 
+export type SimpleDirectoryType = "registrationType" | "district";
+
+export interface SimpleDirectoryItem {
+  id: number;
+  type: SimpleDirectoryType;
+  name: string;
+}
+
 export const openDatabase = async () => {
   const dbPath = path.join(app.getPath('userData'), 'registration.db');
   const db = await open({
@@ -95,6 +103,31 @@ export const createTable = async () => {
         FOREIGN KEY(authorityId) REFERENCES authorities(id) ON DELETE CASCADE
       )
     `);
+
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS simple_directories (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        type TEXT NOT NULL,
+        name TEXT NOT NULL COLLATE NOCASE,
+        UNIQUE(type, name)
+      )
+    `);
+
+    await db.run(
+      `INSERT OR IGNORE INTO simple_directories (type, name)
+       SELECT 'registrationType', TRIM(registrationType)
+       FROM registrations
+       WHERE registrationType IS NOT NULL
+         AND TRIM(registrationType) <> ''`,
+    );
+
+    await db.run(
+      `INSERT OR IGNORE INTO simple_directories (type, name)
+       SELECT 'district', TRIM(district)
+       FROM registrations
+       WHERE district IS NOT NULL
+         AND TRIM(district) <> ''`,
+    );
 
     console.log("Таблица успешно создана");
   } catch (error) {
@@ -351,6 +384,60 @@ export const deleteSubdivision = async (id: number): Promise<void> => {
   const db = await openDatabase();
   try {
     await db.run(`DELETE FROM authority_subdivisions WHERE id = ?`, [id]);
+  } finally {
+    await db.close();
+  }
+};
+
+export const getSimpleDirectoryItems = async (
+  type: SimpleDirectoryType,
+): Promise<SimpleDirectoryItem[]> => {
+  const db = await openDatabase();
+  try {
+    return db.all<SimpleDirectoryItem[]>(
+      `SELECT id, type, name
+       FROM simple_directories
+       WHERE type = ?
+       ORDER BY name COLLATE NOCASE`,
+      [type],
+    );
+  } finally {
+    await db.close();
+  }
+};
+
+export const addSimpleDirectoryItem = async (
+  type: SimpleDirectoryType,
+  name: string,
+): Promise<SimpleDirectoryItem> => {
+  const db = await openDatabase();
+  try {
+    const result = await db.run(
+      `INSERT INTO simple_directories (type, name) VALUES (?, ?)`,
+      [type, name],
+    );
+
+    const row = await db.get<SimpleDirectoryItem>(
+      `SELECT id, type, name
+       FROM simple_directories
+       WHERE id = ?`,
+      [result.lastID],
+    );
+
+    if (!row) {
+      throw new Error("Не удалось получить добавленный элемент справочника");
+    }
+
+    return row;
+  } finally {
+    await db.close();
+  }
+};
+
+export const deleteSimpleDirectoryItem = async (id: number): Promise<void> => {
+  const db = await openDatabase();
+  try {
+    await db.run(`DELETE FROM simple_directories WHERE id = ?`, [id]);
   } finally {
     await db.close();
   }

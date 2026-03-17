@@ -19,6 +19,7 @@ let mainWindow = null;
 const PASSWORD = process.env.RTS_OP_PASSWORD ?? "123";
 const ALLOWED_SEARCH_FIELDS = new Set(["stateNumber", "techPassportNumber"]);
 const ISSUED_STATE_NUMBER_CONDITION = "stateNumber IS NOT NULL AND TRIM(stateNumber) <> ''";
+const SIMPLE_DIRECTORY_TYPES = new Set(["registrationType", "district"]);
 const createWindow = async () => {
     const preloadPath = path_1.default.join(__dirname, "preload.js");
     mainWindow = new electron_1.BrowserWindow({
@@ -229,6 +230,30 @@ electron_1.ipcMain.handle("delete-subdivision", async (_event, id) => {
         throw new Error("Некорректный идентификатор подразделения");
     }
     await (0, database_1.deleteSubdivision)(id);
+    return { success: true };
+});
+electron_1.ipcMain.handle("get-simple-directory-items", async (_event, type) => {
+    if (!SIMPLE_DIRECTORY_TYPES.has(type)) {
+        throw new Error("Некорректный тип справочника");
+    }
+    return (0, database_1.getSimpleDirectoryItems)(type);
+});
+electron_1.ipcMain.handle("add-simple-directory-item", async (_event, params) => {
+    const type = params?.type;
+    const normalizedName = typeof params?.name === "string" ? params.name.trim() : "";
+    if (!SIMPLE_DIRECTORY_TYPES.has(type)) {
+        throw new Error("Некорректный тип справочника");
+    }
+    if (!normalizedName) {
+        throw new Error("Название элемента справочника не может быть пустым");
+    }
+    return (0, database_1.addSimpleDirectoryItem)(type, normalizedName);
+});
+electron_1.ipcMain.handle("delete-simple-directory-item", async (_event, id) => {
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Некорректный идентификатор элемента справочника");
+    }
+    await (0, database_1.deleteSimpleDirectoryItem)(id);
     return { success: true };
 });
 electron_1.ipcMain.handle("search-vehicle", async (_event, searchParams) => {

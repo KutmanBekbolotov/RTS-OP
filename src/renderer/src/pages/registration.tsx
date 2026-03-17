@@ -55,6 +55,12 @@ interface AuthorityDirectoryItem {
   subdivisions: Subdivision[];
 }
 
+interface SimpleDirectoryItem {
+  id: number;
+  type: "registrationType" | "district";
+  name: string;
+}
+
 const defaultSpravka: SpravkaProps = {
   registrationType: "",
   registrationDate: "",
@@ -98,6 +104,8 @@ const RegistrationForm = () => {
   const [spravkaData, setSpravkaData] = useState<SpravkaProps>(defaultSpravka);
   const [techPassportData, setTechPassportData] = useState<TechPassportProps>(defaultTechPassport);
   const [authorityDirectory, setAuthorityDirectory] = useState<AuthorityDirectoryItem[]>([]);
+  const [registrationTypeDirectory, setRegistrationTypeDirectory] = useState<SimpleDirectoryItem[]>([]);
+  const [districtDirectory, setDistrictDirectory] = useState<SimpleDirectoryItem[]>([]);
   const [notification, setNotification] = useState<{
     open: boolean;
     message: string;
@@ -110,21 +118,30 @@ const RegistrationForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const loadAuthorityDirectory = async () => {
+    const loadDirectories = async () => {
       try {
-        const result = await window.electron.getAuthorityDirectory();
-        setAuthorityDirectory(result);
+        const [authorityResult, registrationTypeResult, districtResult] = await Promise.all([
+          window.electron.getAuthorityDirectory(),
+          window.electron.getSimpleDirectoryItems("registrationType"),
+          window.electron.getSimpleDirectoryItems("district"),
+        ]);
+
+        setAuthorityDirectory(authorityResult);
+        setRegistrationTypeDirectory(registrationTypeResult);
+        setDistrictDirectory(districtResult);
       } catch (error) {
-        console.error("Ошибка загрузки справочника госорганов:", error);
+        console.error("Ошибка загрузки справочников:", error);
       }
     };
 
-    void loadAuthorityDirectory();
+    void loadDirectories();
   }, []);
 
   const normalizeName = (value: string) => value.trim().toLowerCase();
 
   const authorityNames = authorityDirectory.map((item) => item.name);
+  const registrationTypeOptions = registrationTypeDirectory.map((item) => item.name);
+  const districtOptions = districtDirectory.map((item) => item.name);
 
   const selectedOrganization = authorityDirectory.find(
     (item) => normalizeName(item.name) === normalizeName(spravkaData.organizationName),
@@ -304,6 +321,34 @@ const RegistrationForm = () => {
     />
   );
 
+  const renderSimpleDirectoryField = (
+    label: string,
+    field: keyof SpravkaProps,
+    options: string[],
+    helperText?: string,
+  ) => (
+    <Autocomplete
+      freeSolo
+      options={options}
+      value={spravkaData[field]}
+      onChange={(_, newValue) => {
+        handleChange(field, typeof newValue === "string" ? newValue : "");
+      }}
+      onInputChange={(_, newInputValue) => {
+        handleChange(field, newInputValue);
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          fullWidth
+          sx={{ mb: 2 }}
+          helperText={helperText}
+        />
+      )}
+    />
+  );
+
   const renderSubdivisionField = () => (
     <Autocomplete
       freeSolo
@@ -362,13 +407,23 @@ const RegistrationForm = () => {
         </Typography>
 
         {/* Spravka Fields */}
-        {renderTextField("Тип регистрации", "registrationType")}
+        {renderSimpleDirectoryField(
+          "Тип регистрации",
+          "registrationType",
+          registrationTypeOptions,
+          "Можно выбрать из справочника или ввести вручную",
+        )}
         {renderDateField("Дата регистрации", "registrationDate")}
         {renderDateField("Дата получения", "receiveDate")}
         {renderTextField("Территориальный отдел", "territorialDepartment")}
         {renderAuthorityField("Наименование органа", "organizationName")}
         {renderSubdivisionField()}
-        {renderTextField("Район", "district")}
+        {renderSimpleDirectoryField(
+          "Район",
+          "district",
+          districtOptions,
+          "Можно выбрать из справочника или ввести вручную",
+        )}
         {renderTextField("Адрес органа", "address")}
         {renderTextField("Гос номер", "stateNumber")}
         {renderTextField("Номер техпаспорта", "techPassportNumber")}

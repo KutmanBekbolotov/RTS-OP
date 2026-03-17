@@ -37,6 +37,14 @@ const electronAPI = {
 
   deleteSubdivision: (id: number) => ipcRenderer.invoke("delete-subdivision", id),
 
+  getSimpleDirectoryItems: (type: "registrationType" | "district") =>
+    ipcRenderer.invoke("get-simple-directory-items", type),
+
+  addSimpleDirectoryItem: (params: { type: "registrationType" | "district"; name: string }) =>
+    ipcRenderer.invoke("add-simple-directory-item", params),
+
+  deleteSimpleDirectoryItem: (id: number) => ipcRenderer.invoke("delete-simple-directory-item", id),
+
   getIssuedNumbersReport: (
     filter:
       | { scope: "authority"; authorityName: string }
