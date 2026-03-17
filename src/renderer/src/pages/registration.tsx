@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import TechPassportPrint from "@/components/TechPassportPrint";
+import TechPassportPrintPreview from "@/components/TechPassportPrintPreview";
 import {
   buildTechPassportPrintHtml,
-  TECH_PASSPORT_PRINT_TEMPLATE_STYLES,
 } from "@/components/techPassportPrintTemplate";
 import { SearchResult } from "@/components/types";
 
@@ -430,22 +429,10 @@ const RegistrationForm = () => {
         </Box>
       </Paper>
 
-      <div
+      <TechPassportPrintPreview
         id="registration-print-passport"
-        style={{
-          position: "absolute",
-          top: "-9999px",
-          left: "-9999px",
-          width: "14.80cm",
-          height: "10.50cm",
-          visibility: "hidden",
-        }}
-      >
-        <style>
-          {TECH_PASSPORT_PRINT_TEMPLATE_STYLES}
-        </style>
-        <TechPassportPrint searchResult={techPassportPrintData} />
-      </div>
+        searchResult={techPassportPrintData}
+      />
 
       <Snackbar
         open={notification.open}

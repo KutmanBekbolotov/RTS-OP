@@ -291,34 +291,23 @@ const Directory = () => {
         </Button>
       </Box>
 
-      <Paper
-        sx={{
-          p: 2,
-          mb: 3,
-          borderRadius: 3,
-          border: "1px solid #d8e1ef",
-          boxShadow: "0 18px 40px rgba(15, 23, 42, 0.08)",
-          backgroundColor: "rgba(255, 255, 255, 0.92)",
-        }}
-      >
-        <Box sx={{ display: "flex", gap: 2 }}>
-          <TextField
-            label="Наименование госоргана"
-            value={authorityName}
-            onChange={(e) => setAuthorityName(e.target.value)}
-            fullWidth
-          />
-          <Button variant="contained" onClick={handleAddAuthority} sx={{ minWidth: 140 }}>
-            Добавить
-          </Button>
-        </Box>
-      </Paper>
-
       <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", md: "row" }, mb: 3 }}>
         <Paper sx={{ ...cardSx, flex: 1 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
             Органы
           </Typography>
+
+          <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+            <TextField
+              label="Наименование госоргана"
+              value={authorityName}
+              onChange={(e) => setAuthorityName(e.target.value)}
+              fullWidth
+            />
+            <Button variant="contained" onClick={handleAddAuthority} sx={{ minWidth: 140 }}>
+              Добавить
+            </Button>
+          </Box>
 
           {directory.length === 0 ? (
             <Typography color="text.secondary">Список пуст.</Typography>
