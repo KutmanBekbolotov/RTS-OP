@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Button, Box, Typography, Snackbar, Alert, Paper } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import TechPassportPrint from "@/components/TechPassportPrint";
+import {
+  buildTechPassportPrintHtml,
+  TECH_PASSPORT_PRINT_TEMPLATE_STYLES,
+} from "@/components/techPassportPrintTemplate";
 import { SearchResult } from "@/components/types";
 
 interface SpravkaProps {
@@ -222,34 +226,7 @@ const RegistrationForm = () => {
     const tempDiv = document.createElement("div");
     tempDiv.appendChild(clone);
 
-    const html = `
-      <html>
-        <head>
-          <style>
-            @page {
-              size: auto;
-              margin: 0;
-            }
-            html, body {
-              width: 100%;
-              height: 100%;
-              margin: 0;
-              padding: 0;
-            }
-            .tech-passport-print {
-              width: 100vw;
-              height: 100vh;
-              box-sizing: border-box;
-              padding: 0;
-            }
-            * {
-              box-sizing: border-box;
-            }
-          </style>
-        </head>
-        <body>${tempDiv.innerHTML}</body>
-      </html>
-    `;
+    const html = buildTechPassportPrintHtml(tempDiv.innerHTML);
 
     const pdfPath = await window.electron.openPDFPreview(html);
     await window.electron.printGeneratedPDF(pdfPath);
@@ -465,83 +442,7 @@ const RegistrationForm = () => {
         }}
       >
         <style>
-          {`
-            html, body {
-              margin: 0;
-              padding: 0;
-              width: 100%;
-              height: 100%;
-            }
-            .container {
-              display: flex;
-              width: 100%;
-              height: 100%;
-              box-sizing: border-box;
-            }
-            .main-info-left {
-              width: 100%;
-              padding-top: 15%;
-              font-size: 18px;
-              display: flex;
-              flex-direction: column;
-              gap: 15px;
-              box-sizing: border-box;
-              align-items: flex-end;
-            }
-            .main-info-right {
-              width: 100%;
-              padding-top: 15%;
-              font-size: 18px;
-              display: flex;
-              flex-direction: column;
-              gap: 20px;
-              box-sizing: border-box;
-              align-items: flex-end;
-            }
-            .main-info-right-top {
-              display: flex;
-              flex-direction: column;
-              gap: 21px;
-            }
-            .main-info-right-middle {
-              display: flex;
-              flex-direction: column;
-              gap: 20px;
-              margin-top: 9.5%;
-              align-items: flex-end;
-              width: 50%;
-            }
-            .main-info-right-bottom {
-              display: flex;
-              flex-direction: column;
-              gap: 10px;
-              margin-top: 3.8%;
-              width: 20%;
-            }
-            h6 {
-              display: none !important;
-            }
-            .address {
-             align-items:flex-end;
-             text-align: end;
-             width: 70%;
-            }
-            .address span {
-              display: block;
-              white-space: normal;
-              overflow-wrap: break-word;
-              word-break: break-word;
-              text-align: left;
-            }
-            .tech-passport-print {
-              width: 97%;
-              height: 100%;
-              box-sizing: border-box;
-              padding: 0;
-              display: flex;
-              flex-direction: column;
-            }
-          `}
+          {TECH_PASSPORT_PRINT_TEMPLATE_STYLES}
         </style>
         <TechPassportPrint searchResult={techPassportPrintData} />
       </div>
