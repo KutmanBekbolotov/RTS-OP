@@ -202,7 +202,7 @@ const TechPassportPrint: React.FC<TechPassportProps> = ({ searchResult }) => {
             <div className="address">
               <h6>АДРЕС СОБСТВЕННИКА</h6>
               <span
-                style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", display: "block", maxWidth: "100%" }}
+                // style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", display: "block", maxWidth: "100%" }}
               >
                 {addressLines.length > 0
                   ? addressLines.map((line, index) => (

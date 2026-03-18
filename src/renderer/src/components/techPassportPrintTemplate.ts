@@ -27,9 +27,13 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
     font-size: 11px;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
     box-sizing: border-box;
     align-items: flex-end;
+  }
+
+  .model{
+    padding-right: 15px!important;
   }
 
   .main-info-right {
@@ -54,8 +58,6 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
     flex-direction: column;
     gap: 20px;
     margin-top: 11%;
-    align-items: flex-end;
-    width: 65%;
   }
 
   .main-info-right-bottom {
@@ -67,22 +69,12 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   }
 
   .address {
-    align-items: flex-end;
-    text-align: end;
-    width: 80%;
+    text-align: start;
     font-size: 11px;
     line-height: 1.15;
   }
 
-  .address span {
-    display: block;
-    white-space: normal;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    text-align: right;
-    font-size: 11px;
-    line-height: 1.15;
-  }
+
 
   .number {
     font-size: 20px !important;
@@ -144,3 +136,14 @@ export const buildTechPassportPrintHtml = (content: string): string => `
     <body>${content}</body>
   </html>
 `;
+
+
+  // .address span {
+  //   display: block;
+  //   white-space: normal;
+  //   overflow-wrap: break-word;
+  //   word-break: break-word;
+  //   text-align: right;
+  //   font-size: 11px;
+  //   line-height: 1.15;
+  // }
