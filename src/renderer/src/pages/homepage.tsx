@@ -67,7 +67,7 @@ function Home({ setIsAuthenticated }: { setIsAuthenticated: React.Dispatch<React
                 >
                     <img src={gerb} alt="Герб КР" width={180} />
                     <Typography variant="h4" sx={{ mt: 2, maxWidth: "680px", mx: "auto", fontWeight: 700 }}>
-                        Государственное центр по регистрации транспортных средств и водительского состава
+                        Государственный центр по регистрации транспортных средств и водительского состава
                     </Typography>
                 </Box>
             </Box>
