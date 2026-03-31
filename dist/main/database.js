@@ -160,7 +160,7 @@ const insertRegistrationData = async (formData) => {
             formData.issuingAuthority,
             formData.authorizedSignature,
         ]);
-        return result;
+        return db.get(`SELECT * FROM registrations WHERE id = ?`, [result.lastID]);
     }
     finally {
         await db.close();

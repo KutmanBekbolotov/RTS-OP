@@ -242,8 +242,8 @@ ipcMain.handle("insert-registration-data", async (_event, formData) => {
       throw new Error("Нет данных для сохранения");
     }
 
-    await insertRegistrationData(formData);
-    return { success: true, message: "Данные успешно сохранены!" };
+    const inserted = await insertRegistrationData(formData);
+    return { success: true, message: "Данные успешно сохранены!", data: inserted };
   } catch (error) {
     console.error("Ошибка при сохранении:", error);
     throw new Error(error instanceof Error ? error.message : "Ошибка при сохранении данных");

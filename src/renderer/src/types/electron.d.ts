@@ -47,7 +47,7 @@ interface IssuedNumbersReport {
 }
 
 interface IElectronAPI {
-  addRegistration: (formData: unknown) => Promise<{ success: boolean; message: string }>;
+  addRegistration: (formData: unknown) => Promise<{ success: boolean; message: string; data: any }>;
   updateRegistration: (formData: unknown) => Promise<{ success: boolean; data: any }>;
   searchVehicle: (searchParams: { type: string; query: string }) => Promise<any | null>;
   checkPassword: (password: string) => Promise<boolean>;

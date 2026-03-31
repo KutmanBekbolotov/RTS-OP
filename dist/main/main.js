@@ -173,8 +173,8 @@ electron_1.ipcMain.handle("insert-registration-data", async (_event, formData) =
         if (!formData) {
             throw new Error("Нет данных для сохранения");
         }
-        await (0, database_1.insertRegistrationData)(formData);
-        return { success: true, message: "Данные успешно сохранены!" };
+        const inserted = await (0, database_1.insertRegistrationData)(formData);
+        return { success: true, message: "Данные успешно сохранены!", data: inserted };
     }
     catch (error) {
         console.error("Ошибка при сохранении:", error);

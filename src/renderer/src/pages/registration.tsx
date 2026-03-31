@@ -103,9 +103,23 @@ const defaultTechPassport: TechPassportProps = {
   authorizedSignature: "",
 };
 
+interface RegistrationDraft {
+  id: number | null;
+  spravkaData: SpravkaProps;
+  techPassportData: TechPassportProps;
+}
+
+const createEmptyRegistrationDraft = (): RegistrationDraft => ({
+  id: null,
+  spravkaData: { ...defaultSpravka },
+  techPassportData: { ...defaultTechPassport },
+});
+
 const RegistrationForm = () => {
-  const [spravkaData, setSpravkaData] = useState<SpravkaProps>(defaultSpravka);
-  const [techPassportData, setTechPassportData] = useState<TechPassportProps>(defaultTechPassport);
+  const [formDrafts, setFormDrafts] = useState<RegistrationDraft[]>(() => [
+    createEmptyRegistrationDraft(),
+  ]);
+  const [activeFormIndex, setActiveFormIndex] = useState(0);
   const [authorityDirectory, setAuthorityDirectory] = useState<AuthorityDirectoryItem[]>([]);
   const [registrationTypeDirectory, setRegistrationTypeDirectory] = useState<SimpleDirectoryItem[]>([]);
   const [districtDirectory, setDistrictDirectory] = useState<SimpleDirectoryItem[]>([]);
@@ -141,6 +155,8 @@ const RegistrationForm = () => {
   }, []);
 
   const normalizeName = (value: string) => value.trim().toLowerCase();
+  const currentForm = formDrafts[activeFormIndex] ?? formDrafts[0] ?? createEmptyRegistrationDraft();
+  const { spravkaData, techPassportData } = currentForm;
 
   const authorityNames = authorityDirectory.map((item) => item.name);
   const registrationTypeOptions = registrationTypeDirectory.map((item) => item.name);
@@ -159,20 +175,51 @@ const RegistrationForm = () => {
       ? spravkaData[field as keyof SpravkaProps]
       : techPassportData[field as keyof TechPassportProps];
 
+  const updateActiveForm = (updater: (draft: RegistrationDraft) => RegistrationDraft) => {
+    setFormDrafts((prevDrafts) =>
+      prevDrafts.map((draft, index) => (index === activeFormIndex ? updater(draft) : draft)),
+    );
+  };
+
   const handleChange = (field: string, value: string) => {
     if (field in spravkaData) {
-      setSpravkaData((prev) => ({ ...prev, [field]: value }));
-      if (field === "address") {
-        setTechPassportData((prev) => ({ ...prev, ownerAddress: value }));
-      }
+      updateActiveForm((draft) => ({
+        ...draft,
+        spravkaData: { ...draft.spravkaData, [field]: value },
+        techPassportData:
+          field === "address"
+            ? { ...draft.techPassportData, ownerAddress: value }
+            : draft.techPassportData,
+      }));
     } else if (field in techPassportData) {
-      setTechPassportData((prev) => ({ ...prev, [field]: value }));
+      updateActiveForm((draft) => ({
+        ...draft,
+        techPassportData: { ...draft.techPassportData, [field]: value },
+      }));
     }
   };
 
   const toPrintableValue = (value: string): string | null => {
     const normalized = value.trim();
     return normalized === "" ? null : normalized;
+  };
+
+  const getSaveErrorMessage = (error: unknown): string => {
+    const defaultMessage = "Ошибка при сохранении данных.";
+
+    if (!(error instanceof Error)) {
+      return defaultMessage;
+    }
+
+    if (error.message.includes("registrations.techPassportNumber")) {
+      return "Не удалось сохранить: номер техпаспорта уже используется в другой записи.";
+    }
+
+    if (error.message.includes("registrations.stateNumber")) {
+      return "Не удалось сохранить: гос номер уже используется в другой записи.";
+    }
+
+    return error.message || defaultMessage;
   };
 
   const buildTechPassportPrintData = (): SearchResult => ({
@@ -233,15 +280,48 @@ const RegistrationForm = () => {
 
   const handleSubmit = async (printAfterSave = false) => {
     try {
+      const draftToSave = formDrafts[activeFormIndex];
+      if (!draftToSave) {
+        throw new Error("Текущая форма не найдена.");
+      }
+
       const rawDataToSend = {
-        ...spravkaData,
-        ...techPassportData,
+        ...draftToSave.spravkaData,
+        ...draftToSave.techPassportData,
         fullName: "",
       };
       const dataToSend = Object.fromEntries(
         Object.entries(rawDataToSend).map(([key, value]) => [key, toPrintableValue(value)]),
       );
-      await window.electron.addRegistration(dataToSend);
+
+      const isExistingRecord = Number.isInteger(draftToSave.id);
+      let saveMessage = "Данные успешно сохранены!";
+
+      if (isExistingRecord) {
+        const response = await window.electron.updateRegistration({
+          id: draftToSave.id,
+          ...dataToSend,
+        });
+
+        setFormDrafts((prevDrafts) =>
+          prevDrafts.map((draft, index) =>
+            index === activeFormIndex
+              ? { ...draft, id: response.data?.id ?? draft.id }
+              : draft,
+          ),
+        );
+        saveMessage = "Данные успешно обновлены!";
+      } else {
+        const response = await window.electron.addRegistration(dataToSend);
+
+        setFormDrafts((prevDrafts) =>
+          prevDrafts.map((draft, index) =>
+            index === activeFormIndex
+              ? { ...draft, id: response.data?.id ?? draft.id }
+              : draft,
+          ),
+        );
+      }
 
       let printErrorHappened = false;
       if (printAfterSave) {
@@ -256,20 +336,35 @@ const RegistrationForm = () => {
       setNotification({
         open: true,
         message: printErrorHappened
-          ? "Данные сохранены, но печать техпаспорта не удалась."
-          : "Данные успешно сохранены!",
+          ? `${saveMessage} Но печать техпаспорта не удалась.`
+          : saveMessage,
         severity: printErrorHappened ? "error" : "success",
       });
-      setSpravkaData(defaultSpravka);
-      setTechPassportData(defaultTechPassport);
     } catch (err) {
       console.error("Ошибка при сохранении:", err);
       setNotification({
         open: true,
-        message: err instanceof Error ? err.message : "Ошибка при сохранении данных.",
+        message: getSaveErrorMessage(err),
         severity: "error",
       });
     }
+  };
+
+  const handlePreviousForm = () => {
+    setActiveFormIndex((prevIndex) => Math.max(prevIndex - 1, 0));
+  };
+
+  const handleNextForm = () => {
+    setFormDrafts((prevDrafts) => {
+      const nextIndex = activeFormIndex + 1;
+
+      if (nextIndex < prevDrafts.length) {
+        return prevDrafts;
+      }
+
+      return [...prevDrafts, createEmptyRegistrationDraft()];
+    });
+    setActiveFormIndex((prevIndex) => prevIndex + 1);
   };
 
   const renderTextField = (label: string, field: string) => (
@@ -378,9 +473,26 @@ const RegistrationForm = () => {
           backdropFilter: "blur(6px)",
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
-          Регистрация автомобиля
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 2,
+            mb: 2,
+            flexDirection: { xs: "column", md: "row" },
+            alignItems: { xs: "flex-start", md: "center" },
+          }}
+        >
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              Регистрация автомобиля
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              Форма {activeFormIndex + 1} из {formDrafts.length}. При переходе вперед на
+              последней форме автоматически создается новая пустая запись.
+            </Typography>
+          </Box>
+        </Box>
 
         {/* Spravka Fields */}
         {renderSimpleDirectoryField(
@@ -414,10 +526,33 @@ const RegistrationForm = () => {
         {renderAuthorityField("Орган выдачи", "issuingAuthority")}
         {renderTextField("Подпись уполномоченного", "authorizedSignature")}
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", mt: 3, gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mt: 3,
+            gap: 2,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+        >
           <Button variant="outlined" onClick={() => navigate("/")}>
-            Назад
+            На главную
           </Button>
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            <Button
+              variant="outlined"
+              onClick={handlePreviousForm}
+              disabled={activeFormIndex === 0}
+            >
+              Предыдущая форма
+            </Button>
+            <Button variant="outlined" onClick={handleNextForm}>
+              {activeFormIndex === formDrafts.length - 1
+                ? "Следующая пустая форма"
+                : "Следующая форма"}
+            </Button>
+          </Box>
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "flex-end" }}>
             <Button variant="outlined" onClick={() => void handleSubmit(true)}>
               Сохранить и печать техпаспорта
