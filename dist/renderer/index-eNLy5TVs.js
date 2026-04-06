@@ -207,7 +207,7 @@ export default theme;`}function op(t={},...r){const{breakpoints:o,mixins:l={},sp
   .main-info-left {
     width: 100%;
     padding-top: 13.5%;
-    font-size: 11px;
+    font-size: 15px!important;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -216,7 +216,11 @@ export default theme;`}function op(t={},...r){const{breakpoints:o,mixins:l={},sp
   }
 
   .model{
-    padding-right: 15px!important;
+    padding-right: 30px!important;
+  }
+
+  .model span {
+    font-size: 18px !important;
   }
 
   .main-info-right {

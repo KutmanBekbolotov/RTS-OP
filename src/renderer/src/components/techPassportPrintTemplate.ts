@@ -24,7 +24,7 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   .main-info-left {
     width: 100%;
     padding-top: 13.5%;
-    font-size: 11px;
+    font-size: 15px!important;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -33,7 +33,11 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   }
 
   .model{
-    padding-right: 15px!important;
+    padding-right: 30px!important;
+  }
+
+  .model span {
+    font-size: 18px !important;
   }
 
   .main-info-right {
