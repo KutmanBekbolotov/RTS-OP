@@ -515,16 +515,11 @@ const RegistrationForm = () => {
         {renderTextField("Адрес органа", "address")}
         {renderTextField("Гос номер", "stateNumber")}
         {renderTextField("Номер техпаспорта", "techPassportNumber")}
-        {renderDateField("Срок окончания", "expirationDate")}
-        {renderDateField("Дата сдачи техпаспорта", "submissionDate")}
-        {renderDateField("Дата сдачи гос номера", "stateNumberSubmissionDate")}
-        {renderTextField("Примечание", "note")}
 
         {/* Tech Passport Fields */}
         {renderTextField("Модель", "model")}
         {renderTextField("Адрес собственника", "ownerAddress")}
         {renderAuthorityField("Орган выдачи", "issuingAuthority")}
-        {renderTextField("Подпись уполномоченного", "authorizedSignature")}
 
         <Box
           sx={{
