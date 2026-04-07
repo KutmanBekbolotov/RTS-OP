@@ -238,25 +238,33 @@ export default theme;`}function op(t={},...r){const{breakpoints:o,mixins:l={},sp
     display: flex;
     flex-direction: column;
     gap: 21px;
+    margin-bottom: -15x;
+     width: 100%;
+    text-align: end;
+    justify-content: flex-end;
   }
 
   .main-info-right-middle {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    margin-top: 11%;
+    margin-top: 5%;
+     width: 100%;
+    text-align: end;
+    justify-content: flex-end;
   }
 
   .main-info-right-bottom {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 15px;
-    width: 25%;
+    margin-top: 25px;
+    width: 100%;
+    text-align: end;
+    justify-content: flex-end;
   }
 
   .address {
-    text-align: start;
     font-size: 11px;
     line-height: 1.15;
   }
