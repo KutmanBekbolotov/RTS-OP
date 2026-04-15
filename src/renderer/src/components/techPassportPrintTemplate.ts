@@ -66,7 +66,7 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
     flex-direction: column;
     gap: 20px;
     margin-top: 5%;
-     width: 100%;
+     width: 80%;
     text-align: end;
     justify-content: flex-end;
   }
