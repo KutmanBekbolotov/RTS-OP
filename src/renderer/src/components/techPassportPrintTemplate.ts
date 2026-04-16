@@ -66,26 +66,38 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
     flex-direction: column;
     gap: 20px;
     margin-top: 5%;
-     width: 80%;
+    width: 70%;
     text-align: end;
     justify-content: flex-end;
+    flex-wrap: wrap;
+    align-items: flex-end;
   }
 
   .main-info-right-bottom {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-top: 25px;
     width: 100%;
+    margin-bottom: 20px;
     text-align: end;
     justify-content: flex-end;
   }
 
-  .address {
-    font-size: 11px;
-    line-height: 1.15;
-  }
+ .address {
+  width: 75%;
+  text-align: right;
+}
 
+.address span {
+  display: block;
+  width: 100%;
+  margin-left: auto;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  text-align: right;
+}
 
 
   .number {
