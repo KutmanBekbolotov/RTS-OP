@@ -261,25 +261,41 @@ export default theme;`}function lp(t={},...r){const{breakpoints:o,mixins:i={},sp
     flex-direction: column;
     gap: 5px;
     width: 100%;
-    margin-bottom: 20px;
     text-align: end;
     justify-content: flex-end;
+    padding-top: 12px
   }
 
- .address {
+.main-info-right-middle > div,
+.main-info-right-bottom > div {
+  width: 100%;
+  min-height: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
+.main-info-right-middle span,
+.main-info-right-bottom span {
+  display: block;
+  width: 100%;
+  text-align: right;
+  min-height: 8px;
+}
+
+.address {
   width: 75%;
+  margin-left: auto;
   text-align: right;
 }
 
 .address span {
   display: block;
   width: 100%;
-  margin-left: auto;
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
-
   text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 
