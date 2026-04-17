@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Alert,
@@ -13,6 +13,7 @@ import {
   Paper,
   Tabs,
   Tab,
+  MenuItem,
 } from "@mui/material";
 import CertificateContent from "@/components/certificateContent";
 import TechPassportPrintPreview from "@/components/TechPassportPrintPreview";
@@ -26,6 +27,25 @@ type SearchResult = SharedSearchResult & {
 };
 
 type EditableFieldKey = Exclude<keyof SearchResult, "id">;
+type DirectoryFieldKey = Extract<EditableFieldKey, "district" | "organizationName" | "subdivision">;
+
+interface Subdivision {
+  id: number;
+  authorityId: number;
+  name: string;
+}
+
+interface AuthorityDirectoryItem {
+  id: number;
+  name: string;
+  subdivisions: Subdivision[];
+}
+
+interface SimpleDirectoryItem {
+  id: number;
+  type: "registrationType" | "district";
+  name: string;
+}
 
 const SPRAVKA_FIELDS: Array<{ key: EditableFieldKey; label: string; type?: "date" }> = [
   { key: "registrationType", label: "Тип регистрации" },
@@ -77,6 +97,37 @@ const Search = () => {
   const [editData, setEditData] = useState<SearchResult | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [authorityDirectory, setAuthorityDirectory] = useState<AuthorityDirectoryItem[]>([]);
+  const [districtDirectory, setDistrictDirectory] = useState<SimpleDirectoryItem[]>([]);
+
+  useEffect(() => {
+    const loadDirectories = async () => {
+      try {
+        const [authorityResult, districtResult] = await Promise.all([
+          window.electron.getAuthorityDirectory(),
+          window.electron.getSimpleDirectoryItems("district"),
+        ]);
+
+        setAuthorityDirectory(authorityResult);
+        setDistrictDirectory(districtResult);
+      } catch (directoryError) {
+        console.error("Ошибка загрузки справочников:", directoryError);
+        setError("Не удалось загрузить справочники для редактирования");
+      }
+    };
+
+    void loadDirectories();
+  }, []);
+
+  const normalizeName = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+  const authorityNames = authorityDirectory.map((item) => item.name);
+  const districtOptions = districtDirectory.map((item) => item.name);
+  const selectedEditOrganization = authorityDirectory.find(
+    (item) => normalizeName(item.name) === normalizeName(editData?.organizationName),
+  );
+  const subdivisionOptions = selectedEditOrganization
+    ? selectedEditOrganization.subdivisions.map((item) => item.name)
+    : [];
 
   const toNullable = (value: string | null) => {
     const normalized = (value ?? "").trim();
@@ -161,6 +212,88 @@ const Search = () => {
 
       return updated;
     });
+  };
+
+  const handleOrganizationEditChange = (value: string) => {
+    setEditData((prev) => {
+      if (!prev) {
+        return prev;
+      }
+
+      const selectedOrganization = authorityDirectory.find(
+        (item) => normalizeName(item.name) === normalizeName(value),
+      );
+      const selectedSubdivisionOptions = selectedOrganization
+        ? selectedOrganization.subdivisions.map((item) => item.name)
+        : [];
+      const currentSubdivision = prev.subdivision ?? "";
+
+      return {
+        ...prev,
+        organizationName: value,
+        subdivision: selectedSubdivisionOptions.includes(currentSubdivision)
+          ? currentSubdivision
+          : "",
+      };
+    });
+  };
+
+  const getOptionsWithCurrentValue = (options: string[], currentValue: string | null | undefined) => {
+    const normalizedValue = (currentValue ?? "").trim();
+
+    if (!normalizedValue || options.includes(normalizedValue)) {
+      return options;
+    }
+
+    return [normalizedValue, ...options];
+  };
+
+  const renderDirectorySelectField = (field: {
+    key: DirectoryFieldKey;
+    label: string;
+  }) => {
+    const currentValue = editData ? (editData[field.key] ?? "") : "";
+    const baseOptions =
+      field.key === "district"
+        ? districtOptions
+        : field.key === "organizationName"
+          ? authorityNames
+          : subdivisionOptions;
+    const options = getOptionsWithCurrentValue(baseOptions, currentValue);
+    const isSubdivisionDisabled = field.key === "subdivision" && !selectedEditOrganization;
+
+    return (
+      <TextField
+        key={field.key}
+        label={field.label}
+        value={currentValue}
+        onChange={(e) => {
+          if (field.key === "organizationName") {
+            handleOrganizationEditChange(e.target.value);
+            return;
+          }
+
+          handleEditChange(field.key, e.target.value);
+        }}
+        select
+        disabled={isSubdivisionDisabled && !currentValue}
+        helperText={
+          isSubdivisionDisabled
+            ? "Сначала выберите наименование органа из справочника"
+            : undefined
+        }
+        fullWidth
+      >
+        <MenuItem value="">
+          <em>Не выбрано</em>
+        </MenuItem>
+        {options.map((option) => (
+          <MenuItem key={option} value={option}>
+            {option}
+          </MenuItem>
+        ))}
+      </TextField>
+    );
   };
 
   const handleSaveEdit = async () => {
@@ -343,17 +476,30 @@ const Search = () => {
               mb: 3,
             }}
           >
-            {SPRAVKA_FIELDS.map((field) => (
-              <TextField
-                key={field.key}
-                label={field.label}
-                type={field.type === "date" ? "date" : "text"}
-                value={editData ? (editData[field.key] ?? "") : ""}
-                onChange={(e) => handleEditChange(field.key, e.target.value)}
-                InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
-                fullWidth
-              />
-            ))}
+            {SPRAVKA_FIELDS.map((field) => {
+              if (
+                field.key === "district" ||
+                field.key === "organizationName" ||
+                field.key === "subdivision"
+              ) {
+                return renderDirectorySelectField({
+                  key: field.key,
+                  label: field.label,
+                });
+              }
+
+              return (
+                <TextField
+                  key={field.key}
+                  label={field.label}
+                  type={field.type === "date" ? "date" : "text"}
+                  value={editData ? (editData[field.key] ?? "") : ""}
+                  onChange={(e) => handleEditChange(field.key, e.target.value)}
+                  InputLabelProps={field.type === "date" ? { shrink: true } : undefined}
+                  fullWidth
+                />
+              );
+            })}
           </Box>
 
           <Typography variant="h6" sx={{ mb: 1 }}>
