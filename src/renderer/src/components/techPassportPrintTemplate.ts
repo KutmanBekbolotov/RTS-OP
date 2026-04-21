@@ -76,17 +76,17 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   .main-info-right-bottom {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 7px;
     width: 100%;
     text-align: end;
-    justify-content: flex-end;
-    padding-top: 12px
+    justify-content: flex-start;
+    padding-bottom: 14x;
+    max-height: 25px;
   }
 
 .main-info-right-middle > div,
 .main-info-right-bottom > div {
   width: 100%;
-  min-height: 12px;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
@@ -97,7 +97,6 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   display: block;
   width: 100%;
   text-align: right;
-  min-height: 8px;
 }
 
 .address {
