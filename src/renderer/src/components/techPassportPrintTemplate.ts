@@ -250,86 +250,83 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   }
 
   .main-info-right {
-    width: 100%;
-    height: 100%;
-    padding-top: 13%;
-    font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    align-items: flex-end;
-    justify-content: flex-start;
-  }
+  width: 100%;
+  height: 100%;
+  padding-top: 13%;
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  align-items: flex-end;
+  justify-content: flex-start;
+  position: relative;
+}
 
-  .main-info-right-top {
-    display: flex;
-    flex-direction: column;
-    gap: 21px;
-    margin-bottom: 0;
-    width: 100%;
-    text-align: end;
-    justify-content: flex-start;
-  }
+.main-info-right-top {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+  margin-bottom: 0;
+  width: 100%;
+  text-align: end;
+  justify-content: flex-start;
+}
 
-  .main-info-right-middle {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 3%;
-    width: 70%;
-    text-align: end;
-    align-items: flex-end;
-    justify-content: flex-start;
-  }
+.main-info-right-middle {
+  position: absolute;
+  top: 48.5%;
+  right: 0;
+  width: 67%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: end;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
 
-  .main-info-right-bottom {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    text-align: end;
-    justify-content: flex-start;
-    gap: 6px;
-    margin-top: 25px;
-  }
+.main-info-right-bottom {
+  position: absolute;
+  top: 66.5%;
+  right: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: end;
+  justify-content: flex-start;
+  gap: 4px;
+}
 
-  .main-info-right-middle > div,
-  .main-info-right-bottom > div {
-    width: 100%;
-    display: flex;
-    align-items: flex-end;
-    justify-content: flex-end;
-    min-height: 17px;
-  }
+.main-info-right-middle > div,
+.main-info-right-bottom > div {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  min-height: 17px;
+}
 
-  .main-info-right-top span,
-  .main-info-right-middle span,
-  .main-info-right-bottom span {
-    display: block;
-    width: 100%;
-    text-align: right;
-    margin: 0;
-    padding: 0;
-  }
+.address {
+  width: 75%;
+  margin-left: auto;
+  text-align: right;
+  min-height: 26px;
+  max-height: 39px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
 
-  .address {
-    width: 75%;
-    margin-left: auto;
-    text-align: right;
-    min-height: 26px;
-    max-height: 39px;
-    overflow: hidden;
-  }
-
-  .address span {
-    display: block;
-    width: 100%;
-    text-align: right;
-    white-space: normal;
-    overflow-wrap: anywhere;
-    word-break: break-word;
-    hyphens: auto;
-  }
-
+.address span {
+  display: block;
+  width: 100%;
+  text-align: right;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
   .number {
     font-size: 20px !important;
     line-height: 1 !important;
@@ -337,8 +334,8 @@ export const TECH_PASSPORT_PRINT_TEMPLATE_STYLES = `
   }
 
   h1, h2, h3, h4, h5, h6, p, span, div {
-    font-size: 11px !important;
-    line-height: 1.15 !important;
+    font-size: 10.5px !important;
+    line-height: 1.10 !important;
     font-weight: 400;
     margin: 0;
     padding: 0;
